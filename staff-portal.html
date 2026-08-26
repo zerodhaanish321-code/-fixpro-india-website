@@ -1,0 +1,2182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FixPro India — Staff Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest-staff.json">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<meta name="theme-color" content="#F8F8F4">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FixPro Staff">
+<style>
+  :root{
+    --bg: #0B0E13;
+    --bg-alt: #10141C;
+    --card: #151A24;
+    --card-border: #232938;
+    --accent: #F2A93B;
+    --accent-dark: #D98E1F;
+    --accent-soft: rgba(242,169,59,0.12);
+    --teal: #2FD3C7;
+    --text: #F5F6F8;
+    --text-dim: #9AA3B2;
+    --text-faint: #6B7282;
+    --radius: 14px;
+    --shadow: 0 30px 60px -30px rgba(0,0,0,0.7);
+    --hero-glow: rgba(242,169,59,0.16);
+    --header-bg: rgba(11,14,19,0.85);
+    --promo-grad: linear-gradient(120deg, #17202B, #12161F);
+  }
+  body.light{
+    --bg: #F8F8F4;
+    --bg-alt: #FFFFFF;
+    --card: #FFFFFF;
+    --card-border: #E6E2D8;
+    --accent-soft: rgba(217,142,31,0.10);
+    --teal: #0FA99C;
+    --text: #14171F;
+    --text-dim: #565C6B;
+    --text-faint: #888E9A;
+    --shadow: 0 24px 48px -24px rgba(20,23,31,0.16);
+    --hero-glow: rgba(242,169,59,0.22);
+    --header-bg: rgba(255,255,255,0.85);
+    --promo-grad: linear-gradient(120deg, #FFFFFF, #F1EEE4);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    transition: background .25s ease, color .25s ease;
+  }
+  h1,h2,h3,h4{ font-family:'Sora', sans-serif; letter-spacing:-0.02em; }
+  a{ color:inherit; text-decoration:none; }
+  img,svg{ display:block; }
+  .wrap{ max-width:1240px; margin:0 auto; padding:0 24px; }
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    font-weight:700; font-size:14.5px; padding:13px 22px;
+    border-radius:10px; cursor:pointer; border:none; transition: transform .15s ease, box-shadow .15s ease;
+    font-family:'Sora', sans-serif;
+  }
+  .btn-primary{ background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color:#191202; box-shadow: 0 8px 24px -8px rgba(242,169,59,0.55); }
+  .btn-primary:hover{ transform: translateY(-1px); box-shadow: 0 10px 28px -6px rgba(242,169,59,0.65); }
+  .btn-ghost{ background: transparent; color: var(--text); border:1.5px solid var(--card-border); }
+  .btn-ghost:hover{ border-color:#3a4256; }
+
+  /* NAV */
+  header{ position:sticky; top:0; z-index:50; background: var(--header-bg); backdrop-filter: blur(10px); border-bottom:1px solid var(--card-border); transition: background .25s ease, border-color .25s ease; }
+  nav{ display:flex; align-items:center; justify-content:space-between; padding:16px 0; }
+  .logo{ display:flex; align-items:center; gap:10px; font-family:'Sora'; font-weight:800; font-size:19px; }
+  .logo-mark{ width:38px; height:38px; border-radius:9px; background:linear-gradient(135deg,var(--accent),var(--accent-dark)); display:flex; align-items:center; justify-content:center; }
+  .logo-sub{ display:block; font-family:'Inter'; font-weight:500; font-size:10px; color:var(--text-faint); letter-spacing:0.08em; margin-top:1px; }
+  .nav-links{ display:flex; gap:30px; font-size:14.5px; font-weight:600; color:var(--text-dim); }
+  .nav-links a:hover{ color:var(--text); }
+  .nav-cta{ display:flex; align-items:center; gap:12px; }
+  .install-btn{ display:flex; align-items:center; gap:6px; padding:10px 14px; border-radius:10px; border:1.5px solid var(--card-border); background:var(--card); color:var(--text); font-family:'Sora'; font-weight:700; font-size:12.5px; cursor:pointer; }
+  .install-btn:hover{ border-color:var(--accent); color:var(--accent); }
+  .theme-toggle{ width:38px; height:38px; border-radius:50%; border:1.5px solid var(--card-border); background:var(--card); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
+  .theme-toggle svg{ width:17px; height:17px; color:var(--accent); }
+
+  /* HERO */
+  .hero{ padding:64px 0 40px; position:relative; overflow:hidden; }
+  .hero::before{
+    content:''; position:absolute; top:-120px; right:-160px; width:520px; height:520px;
+    background: radial-gradient(circle, var(--hero-glow), transparent 70%); pointer-events:none;
+  }
+  .hero-grid{ display:grid; grid-template-columns: 1.15fr 0.85fr; gap:56px; align-items:center; position:relative; }
+  .eyebrow{ display:inline-flex; align-items:center; gap:8px; background:var(--accent-soft); color:var(--accent); border:1px solid rgba(242,169,59,0.3); font-size:12.5px; font-weight:700; padding:7px 14px; border-radius:999px; margin-bottom:20px; }
+  .hero h1{ font-size:48px; font-weight:800; line-height:1.08; margin-bottom:18px; }
+  .hero h1 span{ color:var(--accent); }
+  .hero p.lead{ font-size:16.5px; color:var(--text-dim); max-width:520px; margin-bottom:26px; }
+  .hero-actions{ display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
+  .hero-note{ font-size:12.5px; color:var(--text-faint); }
+  .badge-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:28px; }
+  .badge{ display:flex; align-items:center; gap:7px; background:var(--card); border:1px solid var(--card-border); padding:9px 14px; border-radius:10px; font-size:13px; font-weight:600; color:var(--text-dim); }
+  .badge svg{ width:15px; height:15px; color:var(--accent); flex-shrink:0; }
+
+  /* Phone mockup */
+  .phone{ background:var(--card); border:1px solid var(--card-border); border-radius:28px; padding:20px; box-shadow: var(--shadow); position:relative; }
+  .phone-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .phone-title{ font-family:'Sora'; font-weight:700; font-size:16px; }
+  .status-pill{ background:rgba(47,211,199,0.14); color:var(--teal); font-size:11px; font-weight:700; padding:4px 10px; border-radius:999px; }
+  .map-box{ background:var(--bg-alt); border:1px solid var(--card-border); border-radius:16px; padding:18px; position:relative; height:150px; margin-bottom:14px; overflow:hidden; }
+  .map-box .live{ display:flex; align-items:center; gap:6px; color:var(--teal); font-size:12.5px; font-weight:700; margin-bottom:8px; }
+  .map-box .live::before{ content:''; width:7px; height:7px; border-radius:50%; background:var(--teal); box-shadow:0 0 0 4px rgba(47,211,199,0.2); }
+  .dot-path{ position:absolute; left:14%; right:16%; top:58%; border-top:2px dashed #2a3143; }
+  .van{ position:absolute; top:50%; width:26px; height:26px; margin-top:-13px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; animation: drive 5s ease-in-out infinite; }
+  .van svg{ width:14px; height:14px; color:#191202; }
+  @keyframes drive{ 0%{left:16%;} 50%{left:78%;} 100%{left:16%;} }
+  .eta{ position:absolute; top:14px; right:14px; background:var(--card); border:1px solid var(--card-border); font-size:11px; padding:5px 9px; border-radius:8px; color:var(--text-dim); font-weight:600; }
+  .tech-card{ display:flex; align-items:center; gap:12px; padding-top:4px; }
+  .avatar{ width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg,var(--accent),var(--accent-dark)); display:flex; align-items:center; justify-content:center; font-family:'Sora'; font-weight:800; color:#191202; font-size:15px; flex-shrink:0; }
+  .tech-name{ font-weight:700; font-size:14.5px; }
+  .tech-role{ font-size:12.5px; color:var(--text-faint); }
+  .tech-rating{ font-size:12px; color:var(--accent); font-weight:700; margin-top:2px; }
+  .call-btn{ margin-left:auto; width:38px; height:38px; border-radius:50%; background:var(--teal); display:flex; align-items:center; justify-content:center; }
+  .call-btn svg{ width:16px; height:16px; color:#06211f; }
+
+  /* HERO SERVICES SHOWCASE */
+  .showcase-grid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; }
+  .showcase-item{ background:var(--bg-alt); border:1.5px solid var(--card-border); border-radius:14px; padding:14px 8px; text-align:center; transition: border-color .3s ease, transform .3s ease, background .3s ease; }
+  .showcase-item svg{ width:22px; height:22px; color:var(--accent); margin:0 auto 8px; }
+  .showcase-item span{ font-size:10.5px; font-weight:700; color:var(--text-dim); line-height:1.25; display:block; }
+  .showcase-item.active{ border-color:var(--accent); background:var(--accent-soft); transform:translateY(-3px); }
+  .showcase-item.active span{ color:var(--accent); }
+
+  /* STATS */
+  .stats{ border-top:1px solid var(--card-border); border-bottom:1px solid var(--card-border); padding:26px 0; margin-top:44px; }
+  .stats-row{ display:flex; justify-content:space-between; flex-wrap:wrap; gap:20px; }
+  .stat{ text-align:left; }
+  .stat b{ font-family:'Sora'; font-size:24px; font-weight:800; display:block; }
+  .stat span{ font-size:13px; color:var(--text-faint); font-weight:600; }
+
+  /* SECTION HEAD */
+  section{ padding:72px 0; }
+  .sec-head{ display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:34px; flex-wrap:wrap; gap:12px; }
+  .sec-head h2{ font-size:30px; font-weight:800; }
+  .sec-head p{ color:var(--text-dim); font-size:14.5px; margin-top:6px; }
+  .see-all{ font-size:14px; font-weight:700; color:var(--accent); display:flex; align-items:center; gap:5px; }
+
+  /* SERVICES */
+  .service-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:14px; }
+  .service-card{ background:var(--card); border:1px solid var(--card-border); border-radius:var(--radius); padding:22px 16px; transition: border-color .2s, transform .2s; cursor:pointer; }
+  .service-card:hover{ border-color: var(--accent); transform: translateY(-3px); }
+  .service-icon{ width:56px; height:56px; border-radius:16px; background:linear-gradient(135deg, var(--accent-soft), rgba(47,211,199,0.10)); display:flex; align-items:center; justify-content:center; margin-bottom:16px; position:relative; overflow:hidden; }
+  .service-icon::after{ content:''; position:absolute; width:22px; height:22px; border-radius:50%; background:var(--teal); opacity:0.16; top:-7px; right:-7px; }
+  .service-icon svg{ width:26px; height:26px; color:var(--accent); position:relative; z-index:1; }
+  .service-icon .spark{ color:var(--teal); }
+  .service-card h4{ font-size:14.5px; font-weight:700; margin-bottom:4px; }
+  .service-card p{ font-size:12px; color:var(--text-faint); line-height:1.4; }
+
+  /* HOW IT WORKS */
+  .steps{ display:flex; gap:0; position:relative; }
+  .step{ flex:1; text-align:center; padding:0 12px; position:relative; }
+  .step::after{ content:''; position:absolute; top:23px; left:56%; right:-44%; border-top:2px dashed #262d3d; }
+  .step:last-child::after{ display:none; }
+  .step-num{ width:46px; height:46px; border-radius:50%; background:var(--card); border:1.5px solid var(--card-border); display:flex; align-items:center; justify-content:center; font-family:'Sora'; font-weight:800; margin:0 auto 16px; position:relative; z-index:2; color:var(--accent); }
+  .step h4{ font-size:14.5px; font-weight:700; margin-bottom:6px; }
+  .step p{ font-size:12.5px; color:var(--text-faint); }
+
+  /* PROMO BAND */
+  .promo-band{ background: var(--promo-grad); border:1px solid var(--card-border); border-radius:20px; padding:30px 34px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; transition: background .25s ease; }
+  .promo-left{ display:flex; align-items:center; gap:18px; }
+  .promo-icon{ width:52px; height:52px; border-radius:14px; background:var(--accent-soft); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .promo-icon svg{ width:26px; height:26px; color:var(--accent); }
+  .promo-left h3{ font-size:18px; font-weight:800; margin-bottom:4px; color:var(--text); }
+  .promo-left p{ font-size:13.5px; color:var(--text-dim); }
+
+  /* FOOTER */
+  footer{ border-top:1px solid var(--card-border); padding:56px 0 26px; }
+  .foot-grid{ display:grid; grid-template-columns: 1.6fr 1fr 1fr 1fr 1.2fr; gap:32px; margin-bottom:40px; }
+  .foot-grid h5{ font-size:13px; font-weight:700; margin-bottom:14px; color:var(--text); }
+  .foot-grid ul{ list-style:none; display:flex; flex-direction:column; gap:9px; }
+  .foot-grid a{ font-size:13.5px; color:var(--text-faint); }
+  .foot-grid a:hover{ color:var(--accent); }
+  .foot-brand p{ font-size:13px; color:var(--text-faint); margin-top:12px; max-width:250px; }
+  .foot-bottom{ border-top:1px solid var(--card-border); padding-top:22px; display:flex; justify-content:space-between; font-size:12.5px; color:var(--text-faint); flex-wrap:wrap; gap:10px; }
+
+  .wa-float{ position:fixed; bottom:22px; right:22px; width:56px; height:56px; border-radius:50%; background:#25D366; display:flex; align-items:center; justify-content:center; box-shadow:0 10px 24px -6px rgba(37,211,102,0.55); z-index:60; transition: transform .15s ease; }
+  .wa-float:hover{ transform: scale(1.06); }
+  .wa-float svg{ width:28px; height:28px; }
+
+  /* PAYMENT MODAL */
+  .modal-overlay{ position:fixed; inset:0; background:rgba(6,8,12,0.72); backdrop-filter: blur(4px); display:none; align-items:center; justify-content:center; z-index:100; padding:20px; }
+  .modal-overlay.open{ display:flex; }
+  #completeJobModalOverlay, #billModalOverlay{ z-index:200; }
+
+  /* STAFF PORTAL — hide customer-facing marketing content */
+  body.staff-portal .hero,
+  body.staff-portal .stats,
+  body.staff-portal #services,
+  body.staff-portal #how,
+  body.staff-portal .cust-only-section,
+  body.staff-portal #about,
+  body.staff-portal #contact,
+  body.staff-portal footer,
+  body.staff-portal .wa-float,
+  body.staff-portal #bookingModalOverlay,
+  body.staff-portal #trackLookupOverlay,
+  body.staff-portal #myBookingsOverlay,
+  body.staff-portal .nav-links,
+  body.staff-portal #navAccountArea{ display:none !important; }
+
+  /* BILL RECEIPT */
+  .bill-paper{ background:#fff; color:#14171F; border-radius:12px; padding:24px; margin:16px 0; border:1px dashed #ccc; }
+  .bill-paper .bill-head{ text-align:center; border-bottom:1px dashed #ccc; padding-bottom:12px; margin-bottom:12px; }
+  .bill-paper .bill-head b{ font-family:'Sora'; font-size:16px; }
+  .bill-paper .bill-row{ display:flex; justify-content:space-between; font-size:12.5px; padding:4px 0; color:#333; }
+  .bill-paper .bill-total{ display:flex; justify-content:space-between; font-size:15px; font-weight:800; border-top:1px dashed #ccc; margin-top:10px; padding-top:10px; }
+  .pay-mode-select{ display:flex; gap:8px; margin-bottom:10px; }
+  .pay-mode-opt{ flex:1; text-align:center; padding:10px; border-radius:9px; border:1.5px solid var(--card-border); background:var(--bg-alt); font-size:13px; font-weight:700; color:var(--text-dim); cursor:pointer; }
+  .pay-mode-opt.active{ border-color:var(--accent); background:var(--accent-soft); color:var(--accent); }
+  .pay-modal{ background:var(--card); border:1px solid var(--card-border); border-radius:20px; width:100%; max-width:360px; padding:28px 26px 24px; text-align:center; position:relative; box-shadow: var(--shadow); }
+  .modal-close{ position:absolute; top:14px; right:14px; width:32px; height:32px; border-radius:50%; background:var(--bg-alt); border:1px solid var(--card-border); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-dim); }
+  .modal-close svg{ width:15px; height:15px; }
+  .pay-modal h3{ font-size:18px; font-weight:800; margin-bottom:4px; }
+  .pay-modal .amt{ font-family:'Sora'; font-size:30px; font-weight:800; color:var(--accent); margin:10px 0 16px; }
+  .qr-box{ background:#ffffff; border-radius:14px; padding:14px; display:inline-flex; align-items:center; justify-content:center; margin-bottom:14px; }
+  .pay-modal .upi-id{ font-size:13px; color:var(--text-dim); font-weight:600; margin-bottom:18px; }
+  .upi-app-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:6px; }
+  .upi-app-btn{ display:flex; align-items:center; justify-content:center; gap:8px; padding:12px 10px; border-radius:10px; border:1.5px solid var(--card-border); background:var(--bg-alt); color:var(--text); font-family:'Sora'; font-weight:700; font-size:12.5px; text-decoration:none; transition:border-color .15s ease, transform .12s ease; }
+  .upi-app-btn svg{ width:16px; height:16px; color:var(--accent); flex-shrink:0; }
+  .upi-app-btn:hover{ border-color:var(--accent); }
+  .upi-app-btn:active{ transform:scale(0.97); }
+  .pay-modal .upi-id span{ color:var(--text); }
+  .pay-modal .hint{ font-size:12px; color:var(--text-faint); margin-top:14px; }
+
+  /* BOOKING FORM MODAL */
+  .booking-modal{ background:var(--card); border:1px solid var(--card-border); border-radius:20px; width:100%; max-width:460px; max-height:88vh; overflow-y:auto; padding:26px 26px 22px; position:relative; box-shadow: var(--shadow); text-align:left; }
+  .booking-modal h3{ font-size:19px; font-weight:800; margin-bottom:16px; }
+  .svc-pills{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  .svc-pill{ padding:9px 14px; border-radius:9px; border:1.5px solid var(--card-border); background:var(--bg-alt); color:var(--text-dim); font-size:12.5px; font-weight:700; cursor:pointer; font-family:'Inter'; }
+  .svc-pill.active{ border-color:var(--accent); background:var(--accent-soft); color:var(--accent); }
+  .field-label{ font-size:12.5px; font-weight:700; color:var(--text-dim); display:block; margin-bottom:6px; }
+  .field-group{ margin-bottom:14px; }
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .booking-modal select, .booking-modal input, .booking-modal textarea{
+    width:100%; background:var(--bg-alt); border:1.5px solid var(--card-border); border-radius:9px;
+    padding:10px 12px; font-size:13.5px; color:var(--text); font-family:'Inter';
+  }
+  .booking-modal select:focus, .booking-modal input:focus, .booking-modal textarea:focus{ outline:none; border-color:var(--accent); }
+  .form-error{ font-size:12.5px; color:#EF5555; margin-bottom:10px; display:none; }
+  .form-error.show{ display:block; }
+
+  /* ROLE + AUTH MODALS */
+  .role-modal{ background:var(--card); border:1px solid var(--card-border); border-radius:20px; width:100%; max-width:360px; padding:28px 26px 24px; position:relative; box-shadow:var(--shadow); text-align:center; }
+  .role-modal h3{ font-size:19px; font-weight:800; margin-bottom:4px; }
+  .role-modal .sub{ font-size:12.5px; color:var(--text-faint); margin-bottom:20px; }
+  .role-option{ width:100%; text-align:left; background:var(--bg-alt); border:1.5px solid var(--card-border); border-radius:12px; padding:14px 16px; margin-bottom:10px; cursor:pointer; font-family:'Inter'; }
+  .role-option:hover{ border-color:var(--accent); }
+  .role-option b{ display:block; font-size:14px; color:var(--text); font-family:'Sora'; }
+  .role-option span{ font-size:12px; color:var(--text-faint); }
+
+  .auth-modal{ background:var(--card); border:1px solid var(--card-border); border-radius:20px; width:100%; max-width:380px; padding:26px 26px 24px; position:relative; box-shadow:var(--shadow); text-align:left; }
+  .auth-modal h3{ font-size:18px; font-weight:800; margin-bottom:3px; }
+  .auth-modal .sub{ font-size:12px; color:var(--text-faint); margin-bottom:18px; }
+  .auth-tabs{ display:flex; gap:4px; background:var(--bg-alt); border-radius:9px; padding:4px; margin-bottom:16px; }
+  .auth-tab{ flex:1; text-align:center; padding:8px; border-radius:7px; font-size:13px; font-weight:700; cursor:pointer; color:var(--text-faint); background:transparent; border:none; font-family:'Inter'; }
+  .auth-tab.active{ background:var(--card); color:var(--text); }
+  .auth-modal input, .auth-modal select{ width:100%; background:var(--bg-alt); border:1.5px solid var(--card-border); border-radius:9px; padding:10px 12px; font-size:13.5px; color:var(--text); font-family:'Inter'; margin-bottom:10px; }
+  .auth-modal input:focus, .auth-modal select:focus{ outline:none; border-color:var(--accent); }
+  .back-link{ font-size:12px; color:var(--text-faint); margin-bottom:14px; display:inline-block; cursor:pointer; }
+
+  /* DASHBOARDS */
+  .dash-overlay{ position:fixed; inset:0; background:var(--bg); z-index:150; overflow-y:auto; display:none; }
+  .dash-overlay.open{ display:block; }
+  .dash-header{ border-bottom:1px solid var(--card-border); background:var(--header-bg); backdrop-filter:blur(10px); padding:16px 0; position:sticky; top:0; z-index:5; }
+  .dash-header .wrap{ display:flex; align-items:center; justify-content:space-between; }
+  .dash-body{ max-width:920px; margin:0 auto; padding:32px 24px 60px; }
+  .dash-card{ background:var(--card); border:1px solid var(--card-border); border-radius:var(--radius); padding:22px; margin-bottom:16px; }
+  .dash-stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+  .dash-stat{ background:var(--card); border:1px solid var(--card-border); border-radius:12px; padding:16px; text-align:center; }
+  .dash-stat.money b{ font-size:19px; }
+  .earn-row{ display:flex; align-items:center; justify-content:space-between; border:1px solid var(--card-border); border-radius:12px; padding:14px 16px; margin-bottom:10px; }
+  .earn-row .earn-name{ font-weight:700; font-size:14px; }
+  .earn-row .earn-sub{ font-size:11.5px; color:var(--text-faint); margin-top:2px; }
+  .earn-row .earn-amounts{ text-align:right; font-size:12.5px; color:var(--text-dim); }
+  .earn-row .earn-amounts b{ display:block; font-size:15px; color:var(--text); font-family:'Sora'; }
+
+  .cred-list-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; border:1px solid var(--card-border); border-radius:12px; padding:14px 16px; margin-bottom:10px; flex-wrap:wrap; }
+  .cred-list-info{ flex:1; min-width:180px; }
+  .cred-list-name{ font-weight:700; font-size:14px; display:flex; align-items:center; gap:8px; }
+  .cred-list-sub{ font-size:11.5px; color:var(--text-faint); margin-top:2px; }
+  .cred-pill-group{ display:flex; gap:8px; flex-wrap:wrap; }
+  .cred-pill{ display:flex; align-items:center; gap:6px; background:var(--bg-alt); border:1px solid var(--card-border); border-radius:8px; padding:6px 10px; font-size:12px; font-family:monospace; }
+  .cred-pill button{ background:none; border:none; cursor:pointer; color:var(--accent); font-size:11px; font-weight:700; font-family:'Inter'; padding:0; }
+  .status-pill-mini{ font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:999px; }
+  .status-pill-mini.approved{ background:rgba(47,211,199,0.12); color:var(--teal); }
+  .status-pill-mini.pending{ background:var(--accent-soft); color:var(--accent); }
+
+  /* TECHNICIAN WELCOME / LOYALTY CARD */
+  .tech-welcome-card{
+    background: linear-gradient(120deg, var(--card), var(--bg-alt));
+    border:1.5px solid var(--card-border); border-radius:18px; padding:26px;
+    margin-bottom:22px; text-align:center; animation: fadeSlideIn .5s ease both;
+  }
+  .tech-welcome-icon{
+    width:56px; height:56px; border-radius:50%; margin:0 auto 14px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-dark));
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 0 0 8px var(--accent-soft); animation: partner-pulse 2.6s ease-in-out infinite;
+  }
+  .tech-welcome-icon svg{ width:26px; height:26px; color:#191202; }
+  .tech-welcome-card h4{ font-size:16px; font-weight:800; margin-bottom:10px; }
+  .tech-welcome-card p{ font-size:13px; color:var(--text-dim); line-height:1.7; max-width:480px; margin:0 auto; }
+  .tech-welcome-card p b{ color:var(--text); }
+
+  @keyframes fadeSlideIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
+
+  /* DASHBOARD ENTRANCE + HOVER ANIMATIONS */
+  .job-row{ transition: border-color .2s ease, transform .15s ease, box-shadow .2s ease; }
+  .job-row:hover{ border-color:var(--accent); box-shadow:0 6px 18px -8px rgba(0,0,0,0.12); }
+  .dash-stat{ transition: transform .2s ease, box-shadow .2s ease; }
+  .dash-stat:hover{ transform:translateY(-3px); box-shadow:0 8px 20px -10px rgba(0,0,0,0.15); }
+  .cred-list-row, .earn-row{ }
+  .btn, .btn-sm{ transition: transform .12s ease, box-shadow .12s ease; }
+  .btn:active, .btn-sm:active{ transform: scale(0.96); }
+
+  .empty-state{ text-align:center; padding:48px 20px; color:var(--text-faint); animation: fadeSlideIn .4s ease both; }
+  .empty-state svg{ width:46px; height:46px; color:var(--card-border); margin:0 auto 14px; animation: floatIcon 3s ease-in-out infinite; }
+  .empty-state p{ font-size:13.5px; }
+  @keyframes floatIcon{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
+  .dash-stat b{ font-family:'Sora'; font-size:24px; font-weight:800; display:block; }
+  .dash-stat span{ font-size:12px; color:var(--text-faint); font-weight:600; }
+  .job-tag{ display:inline-flex; align-items:center; gap:4px; font-size:11.5px; font-weight:800; color:var(--accent); background:var(--accent-soft); border:1px solid rgba(242,169,59,0.3); padding:2px 8px; border-radius:6px; }
+  .status-tag{ font-size:11.5px; font-weight:700; padding:4px 10px; border-radius:999px; border:1px solid; }
+  .st-pending{ color:var(--text-dim); border-color:var(--card-border); background:var(--bg-alt); }
+  .st-assigned{ color:#5B9BFF; border-color:rgba(91,155,255,0.35); background:rgba(91,155,255,0.1); }
+  .st-on_the_way{ color:#B98CFF; border-color:rgba(185,140,255,0.35); background:rgba(185,140,255,0.1); }
+  .st-in_progress{ color:var(--accent); border-color:rgba(242,169,59,0.35); background:var(--accent-soft); }
+  .st-completed{ color:var(--teal); border-color:rgba(47,211,199,0.35); background:rgba(47,211,199,0.1); }
+  .st-cancelled{ color:#EF5555; border-color:rgba(239,85,85,0.35); background:rgba(239,85,85,0.1); }
+  .job-row{ border:1px solid var(--card-border); border-radius:14px; padding:16px; margin-bottom:12px; }
+  .job-row .job-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:8px; }
+  .job-meta{ font-size:12.5px; color:var(--text-dim); display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:6px; }
+  .assign-row{ display:flex; gap:8px; margin-top:12px; }
+  .assign-row select{ flex:1; background:var(--bg-alt); border:1.5px solid var(--card-border); border-radius:8px; padding:8px 10px; font-size:13px; color:var(--text); }
+  .btn-sm{ padding:8px 14px; font-size:12.5px; border-radius:8px; }
+  .btn-danger{ background:rgba(239,85,85,0.12); color:#EF5555; border:none; }
+  .privacy-note{ font-size:11.5px; color:var(--text-faint); font-style:italic; margin-top:6px; }
+
+  /* LIVE MAP (technician GPS tracking) */
+  .live-map-placeholder{ background:var(--bg-alt); border:1px dashed var(--card-border); border-radius:12px; padding:20px; text-align:center; font-size:12.5px; color:var(--text-faint); margin-top:10px; }
+  .live-map-wrap{ margin-top:10px; }
+  .live-map-footer{ display:flex; justify-content:space-between; align-items:center; font-size:11.5px; color:var(--text-faint); margin-top:6px; }
+  .live-map-footer a{ color:var(--accent); font-weight:700; }
+
+  /* BECOME A PARTNER PROMO */
+  .partner-promo{
+    display:flex; align-items:center; gap:40px; background:linear-gradient(120deg, var(--card), var(--bg-alt));
+    border:1.5px solid var(--card-border); border-radius:24px; padding:44px; cursor:pointer;
+    transition: border-color .25s ease, transform .25s ease;
+  }
+  .partner-promo:hover{ border-color:var(--accent); transform:translateY(-2px); }
+  .partner-orbit{ position:relative; width:150px; height:150px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+  .partner-icon-ring{
+    width:90px; height:90px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent-dark));
+    display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 10px var(--accent-soft);
+    animation: partner-pulse 2.6s ease-in-out infinite;
+  }
+  .partner-icon-ring svg{ width:34px; height:34px; color:#191202; }
+  @keyframes partner-pulse{
+    0%, 100% { box-shadow: 0 0 0 10px var(--accent-soft); }
+    50% { box-shadow: 0 0 0 18px transparent; }
+  }
+  .partner-dot{ position:absolute; width:12px; height:12px; border-radius:50%; background:var(--teal); }
+  .partner-dot.d1{ top:6px; left:20px; animation: orbit1 5s linear infinite; }
+  .partner-dot.d2{ bottom:10px; right:14px; animation: orbit2 4s linear infinite; }
+  .partner-dot.d3{ top:50%; right:0; background:var(--accent); animation: orbit3 6s linear infinite; }
+  @keyframes orbit1{ 0%{ transform:translate(0,0);} 50%{ transform:translate(14px,10px);} 100%{ transform:translate(0,0);} }
+  @keyframes orbit2{ 0%{ transform:translate(0,0);} 50%{ transform:translate(-12px,-14px);} 100%{ transform:translate(0,0);} }
+  @keyframes orbit3{ 0%{ transform:translateY(0);} 50%{ transform:translateY(-16px);} 100%{ transform:translateY(0);} }
+  .partner-text h2{ font-size:26px; font-weight:800; margin-bottom:10px; }
+  .partner-text p{ font-size:14.5px; color:var(--text-dim); max-width:480px; margin-bottom:20px; }
+  @media (max-width: 720px){
+    .partner-promo{ flex-direction:column; text-align:center; gap:24px; padding:32px 22px; }
+    .partner-text p{ max-width:100%; }
+  }
+
+  /* PARTNER REGISTRATION MODAL */
+  .partner-modal{ background:var(--card); border:1px solid var(--card-border); border-radius:20px; width:100%; max-width:400px; padding:28px 26px 24px; position:relative; box-shadow:var(--shadow); text-align:left; }
+  .partner-step{ display:none; }
+  .partner-step.active{ display:block; }
+  .partner-step-badge{ display:inline-block; font-size:11px; font-weight:800; color:var(--accent); background:var(--accent-soft); padding:3px 10px; border-radius:999px; margin-bottom:10px; }
+  .partner-modal input, .partner-modal select, .partner-modal textarea{ width:100%; background:var(--bg-alt); border:1.5px solid var(--card-border); border-radius:9px; padding:10px 12px; font-size:13.5px; color:var(--text); font-family:'Inter'; margin-bottom:10px; }
+  .partner-modal input:focus, .partner-modal select:focus, .partner-modal textarea:focus{ outline:none; border-color:var(--accent); }
+  .partner-success{ text-align:center; }
+  .partner-success .check-circle{ width:56px; height:56px; border-radius:50%; background:rgba(47,211,199,0.14); display:flex; align-items:center; justify-content:center; margin:0 auto 14px; }
+  .partner-success .check-circle svg{ width:28px; height:28px; color:var(--teal); }
+  .cred-box{ background:var(--bg-alt); border:1.5px dashed var(--card-border); border-radius:12px; padding:16px; margin:16px 0; text-align:left; }
+  .cred-row{ display:flex; justify-content:space-between; align-items:center; padding:6px 0; font-size:13.5px; }
+  .cred-row b{ font-family:'Sora'; }
+
+  @media (max-width: 920px){
+    .nav-links{ display:none; }
+    .install-btn span{ display:none; }
+    .install-btn{ padding:10px; }
+    .hero-grid{ grid-template-columns: 1fr; }
+    .hero h1{ font-size:34px; }
+    .service-grid{ grid-template-columns: repeat(3,1fr); }
+    .foot-grid{ grid-template-columns: 1fr 1fr; }
+    .steps{ flex-direction:column; gap:26px; }
+    .step::after{ display:none; }
+    .stats-row{ justify-content:space-between; }
+  }
+  @media (max-width: 560px){
+    .service-grid{ grid-template-columns: repeat(2,1fr); }
+    .hero h1{ font-size:28px; }
+    .promo-band{ flex-direction:column; align-items:flex-start; }
+  }
+</style>
+</head>
+<body class="light staff-portal">
+
+<header>
+  <div class="wrap">
+    <nav>
+      <div class="logo">
+        <div class="logo-mark">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#191202" stroke-width="2.4" stroke-linecap="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.8 2.8-2-2z"/></svg>
+        </div>
+        <div>
+          FixPro <span style="color:var(--accent)">India</span>
+          <span class="logo-sub">FIXING YOUR PROBLEMS</span>
+        </div>
+      </div>
+      <div class="nav-links">
+        <a href="#">Home</a>
+        <a href="#services">Services</a>
+        <a href="#how">How It Works</a>
+        <a href="#" onclick="handleTrackBookingClick(event)">Track Booking</a>
+        <a href="#about">About Us</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <div class="nav-cta">
+        <button class="install-btn" id="installBtn" onclick="handleInstallClick(event)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          <span>Install App</span>
+        </button>
+        <a href="#" class="btn btn-primary" onclick="openRoleModal(event)">Staff Login →</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<section>
+  <div class="wrap" style="padding:80px 24px; text-align:center;">
+    <div style="width:52px; height:52px; border-radius:14px; background:linear-gradient(135deg,var(--accent),var(--accent-dark)); display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#191202" stroke-width="2.4" stroke-linecap="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.8 2.8-2-2z"/></svg>
+    </div>
+    <h1 style="font-size:26px; margin-bottom:10px;">FixPro India — Staff Portal</h1>
+    <p style="font-size:14.5px; color:var(--text-dim); max-width:420px; margin:0 auto 24px;">This is a private area for Admin and Technicians only. Customers should use the main FixPro India website.</p>
+    <a href="#" class="btn btn-primary" onclick="openRoleModal(event)">Login →</a>
+  </div>
+</section>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <div class="eyebrow">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          India's Trusted Home Services Platform
+        </div>
+        <h1>Home repairs, done <span>right</span> the first time.</h1>
+        <p class="lead">Verified professionals, upfront pricing, and real-time tracking — book a trusted expert in under a minute, no jugaad required.</p>
+        <div class="hero-actions">
+          <a href="#" class="btn btn-primary" onclick="handleBookNowClick(event)">Book Now for Just ₹49</a>
+          <a href="#how" class="btn btn-ghost">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4V8z" fill="currentColor" stroke="none"/></svg>
+            See How It Works
+          </a>
+        </div>
+        <p class="hero-note">₹49 visit charge, fully adjusted against your final bill.</p>
+
+        <div class="badge-row">
+          <div class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.7 8 11 4.6-2.3 8-6 8-11V5l-8-3z"/><path d="m9 12 2 2 4-4"/></svg> Verified Experts</div>
+          <div class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg> On-Time Service</div>
+          <div class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.3 7-12a7 7 0 0 0-14 0c0 5.7 7 12 7 12z"/><circle cx="12" cy="9" r="2.3"/></svg> Live Tracking</div>
+        </div>
+      </div>
+
+      <div class="phone">
+        <div class="phone-top">
+          <div class="phone-title">All Services</div>
+          <div class="status-pill">Available Now</div>
+        </div>
+        <div class="showcase-grid" id="showcaseGrid"></div>
+        <p style="font-size:12px; color:var(--text-faint); text-align:center; margin-top:14px;">Tap any service below to book instantly</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="stats">
+  <div class="wrap">
+    <div class="stats-row">
+      <div class="stat"><b>10,000+</b><span>Happy Customers</span></div>
+      <div class="stat"><b>500+</b><span>Verified Experts</span></div>
+      <div class="stat"><b>50+</b><span>Cities Covered</span></div>
+      <div class="stat"><b>99.5%</b><span>On-Time Service</span></div>
+      <a href="#" class="stat" style="cursor:pointer; text-decoration:none;" onclick="openPartnerModal(event)"><b style="color:var(--accent);">Become a Partner</b><span>Join as a verified technician →</span></a>
+    </div>
+  </div>
+</div>
+
+<section id="services">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <h2>Our Services</h2>
+        <p>Pick a problem, we'll send the right expert.</p>
+      </div>
+      <a href="#" class="see-all">View All →</a>
+    </div>
+    <div class="service-grid">
+      <div class="service-card" onclick="handleBookNowClick(event, 'Electrician')">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+          <svg class="spark" style="position:absolute; width:9px; height:9px; top:9px; right:11px;" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="12"/></svg>
+        </div>
+        <h4>Electrician</h4><p>Wiring, fittings, repair & more</p>
+      </div>
+      <div class="service-card" onclick="handleBookNowClick(event, 'Plumber')">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2s6 7 6 12a6 6 0 0 1-12 0c0-5 6-12 6-12z"/></svg>
+          <svg class="spark" style="position:absolute; width:8px; height:8px; bottom:11px; left:11px;" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="12"/></svg>
+        </div>
+        <h4>Plumber</h4><p>Pipe fitting, leakage, repair</p>
+      </div>
+      <div class="service-card" onclick="handleBookNowClick(event, 'AC Repair')">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5 5 19"/></svg>
+        </div>
+        <h4>AC Repair</h4><p>Gas filling, service, install</p>
+      </div>
+      <div class="service-card" onclick="handleBookNowClick(event, 'Gas Stove Repair')">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 2c0 1.5-1.5 2-1.5 3.5S8 8 8.5 8s1.5-1 1.5-2.5S8.5 3.5 8.5 2zM15.5 2c0 1.5-1.5 2-1.5 3.5S15 8 15.5 8 17 7 17 5.5 15.5 3.5 15.5 2z"/><path d="M4 12c0-1.1.9-2 2-2h12a2 2 0 0 1 2 2v2H4v-2z"/><path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/></svg>
+          <svg class="spark" style="position:absolute; width:8px; height:8px; top:10px; right:10px;" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="12"/></svg>
+        </div>
+        <h4>Gas Stove Repair</h4><p>Burner, ignition, gas leakage</p>
+      </div>
+      <div class="service-card" onclick="handleBookNowClick(event, 'Appliance Repair')">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h4"/></svg>
+        </div>
+        <h4>Appliance Repair</h4><p>Washing machine, geyser, RO</p>
+      </div>
+      <div class="service-card" onclick="handleBookNowClick(event, 'Civil Work')">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V9l7-5 7 5v12"/><path d="M9 21v-6h6v6"/><path d="M9 9h.01M15 9h.01M12 6h.01"/></svg>
+          <svg class="spark" style="position:absolute; width:8px; height:8px; bottom:10px; right:12px;" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="12"/></svg>
+        </div>
+        <h4>Civil Work</h4><p>Masonry, tiling, wall repair & more</p>
+      </div>
+      <div class="service-card" onclick="handleBookNowClick(event, 'Painter')">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h4v7H3zM7 14 18 3l3 3-11 11"/></svg>
+        </div>
+        <h4>Painter</h4><p>Home painting, wall paint</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how" style="background:var(--bg-alt); border-top:1px solid var(--card-border); border-bottom:1px solid var(--card-border);">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <h2>How It Works</h2>
+        <p>Simple steps, better experience.</p>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><h4>Choose Service</h4><p>Select the problem you're facing</p></div>
+      <div class="step"><div class="step-num">2</div><h4>Book for ₹49</h4><p>Pay a small visit charge upfront</p></div>
+      <div class="step"><div class="step-num">3</div><h4>We Assign an Expert</h4><p>A verified technician is matched to you</p></div>
+      <div class="step"><div class="step-num">4</div><h4>Track in Real Time</h4><p>Watch your technician arrive live</p></div>
+      <div class="step"><div class="step-num">5</div><h4>Work Complete</h4><p>Pay only after the job is done right</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="cust-only-section">
+  <div class="wrap">
+    <div class="partner-promo" onclick="openPartnerModal(event)">
+      <div class="partner-orbit">
+        <div class="partner-icon-ring">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.8 2.8-2-2z"/></svg>
+        </div>
+        <span class="partner-dot d1"></span>
+        <span class="partner-dot d2"></span>
+        <span class="partner-dot d3"></span>
+      </div>
+      <div class="partner-text">
+        <span class="eyebrow" style="margin-bottom:10px;">For Skilled Professionals</span>
+        <h2>Become a FixPro Partner</h2>
+        <p>Get verified, get more jobs. Join as an electrician, plumber, AC technician & more — set your own account up in minutes with just your mobile number.</p>
+        <a href="#" class="btn btn-primary" onclick="openPartnerModal(event)">Register as Technician →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cust-only-section">
+  <div class="wrap">
+    <div class="promo-band">
+      <div class="promo-left">
+        <div class="promo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v9H4v-9M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+        </div>
+        <div>
+          <h3>Refer a friend, earn ₹25</h3>
+          <p>They get ₹49 off their first booking. You get rewarded every time.</p>
+        </div>
+      </div>
+      <a href="https://wa.me/?text=Hey!%20I%20use%20FixPro%20India%20for%20home%20repairs%20-%20verified%20electricians%2C%20plumbers%2C%20AC%20technicians%20%26%20more.%20Use%20my%20link%20to%20book%20your%20first%20service%20and%20get%20%E2%82%B949%20off%3A%20https%3A%2F%2Ffixpro-india.netlify.app" target="_blank" rel="noopener" class="btn btn-primary">Invite Friends</a>
+    </div>
+  </div>
+</section>
+
+<section id="about" style="background:var(--bg-alt); border-top:1px solid var(--card-border); border-bottom:1px solid var(--card-border);">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <h2>About FixPro India</h2>
+        <p>Why homeowners trust us with their repairs.</p>
+      </div>
+    </div>
+    <div style="display:grid; grid-template-columns: 1.1fr 0.9fr; gap:48px; align-items:start;">
+      <div>
+        <p style="font-size:15px; color:var(--text-dim); line-height:1.7; margin-bottom:16px;">
+          FixPro India connects homeowners with verified electricians, plumbers, AC technicians and other skilled
+          professionals — starting right here in Jamshedpur. Every technician on our platform is registered,
+          reviewed, and approved before they can take a single job, so you know exactly who's walking through your door.
+        </p>
+        <p style="font-size:15px; color:var(--text-dim); line-height:1.7;">
+          Our promise is simple: transparent pricing with no hidden charges, real-time updates on your booking status,
+          and a technician who shows up when they say they will. No more calling five people and hoping one picks up —
+          just book, track, and get it fixed.
+        </p>
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
+        <div class="service-card" style="cursor:default;">
+          <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.7 8 11 4.6-2.3 8-6 8-11V5l-8-3z"/><path d="m9 12 2 2 4-4"/></svg></div>
+          <h4>Verified Only</h4><p>Every technician is approved by our team before going live</p>
+        </div>
+        <div class="service-card" style="cursor:default;">
+          <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+          <h4>On Time</h4><p>Live status updates so you always know what's happening</p>
+        </div>
+        <div class="service-card" style="cursor:default;">
+          <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.3 7-12a7 7 0 0 0-14 0c0 5.7 7 12 7 12z"/><circle cx="12" cy="9" r="2.3"/></svg></div>
+          <h4>Local First</h4><p>Started in Jamshedpur, built for Indian homes</p>
+        </div>
+        <div class="service-card" style="cursor:default;">
+          <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div>
+          <h4>Fair Pricing</h4><p>₹49 visit charge, fully adjusted in your final bill</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <h2>Contact Us</h2>
+        <p>We're here to help, every day.</p>
+      </div>
+    </div>
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px;">
+      <div class="service-card" style="cursor:default;">
+        <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.4 2.1L8 9.9a16 16 0 0 0 6 6l1.4-1.4a2 2 0 0 1 2.1-.4c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.7 2.1z"/></svg></div>
+        <h4>+91 62065 39534</h4>
+        <p style="margin-bottom:10px;">Call or message us on this number</p>
+        <div style="display:flex; gap:8px;">
+          <a href="tel:+916206539534" class="btn btn-ghost btn-sm" style="flex:1; justify-content:center;">Call</a>
+          <a href="https://wa.me/916206539534" target="_blank" rel="noopener" class="btn btn-primary btn-sm" style="flex:1; justify-content:center;">WhatsApp</a>
+        </div>
+      </div>
+      <div class="service-card" style="cursor:default;">
+        <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.4 2.1L8 9.9a16 16 0 0 0 6 6l1.4-1.4a2 2 0 0 1 2.1-.4c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.7 2.1z"/></svg></div>
+        <h4>+91 70612 46660</h4>
+        <p style="margin-bottom:10px;">Call or message us on this number</p>
+        <div style="display:flex; gap:8px;">
+          <a href="tel:+917061246660" class="btn btn-ghost btn-sm" style="flex:1; justify-content:center;">Call</a>
+          <a href="https://wa.me/917061246660" target="_blank" rel="noopener" class="btn btn-primary btn-sm" style="flex:1; justify-content:center;">WhatsApp</a>
+        </div>
+      </div>
+      <a href="mailto:fixproindia49@gmail.com" class="service-card" style="text-decoration:none;">
+        <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></svg></div>
+        <h4>Email</h4><p>fixproindia49@gmail.com</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="logo">
+          <div class="logo-mark">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#191202" stroke-width="2.4" stroke-linecap="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.8 2.8-2-2z"/></svg>
+          </div>
+          <div>FixPro <span style="color:var(--accent)">India</span></div>
+        </div>
+        <p>India's trusted home services platform. Quality service, on time, every time.</p>
+      </div>
+      <div>
+        <h5>Quick Links</h5>
+        <ul><li><a href="#">Home</a></li><li><a href="#services">Services</a></li><li><a href="#how">How It Works</a></li><li><a href="#" onclick="handleTrackBookingClick(event)">Track Booking</a></li></ul>
+      </div>
+      <div>
+        <h5>Company</h5>
+        <ul><li><a href="#about">About Us</a></li><li><a href="#" onclick="openTermsModal(event)">Terms & Conditions</a></li><li><a href="#">Privacy Policy</a></li></ul>
+      </div>
+      <div>
+        <h5>Support</h5>
+        <ul><li><a href="#contact">Help & Support</a></li><li><a href="#contact">Contact Us</a></li></ul>
+      </div>
+      <div>
+        <h5>24/7 Support</h5>
+        <ul>
+          <li><a href="tel:+916206539534">+91 62065 39534</a></li>
+          <li><a href="tel:+917061246660">+91 70612 46660</a></li>
+          <li><a href="https://wa.me/916206539534" target="_blank" rel="noopener">WhatsApp Us</a></li>
+          <li><a href="mailto:fixproindia49@gmail.com">fixproindia49@gmail.com</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 FixPro India. All rights reserved.</span>
+      <span>Made for India's homes.</span>
+    </div>
+  </div>
+</footer>
+
+<div class="modal-overlay" id="bookingModalOverlay">
+  <div class="booking-modal">
+    <button class="modal-close" onclick="closeBookingModal()" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <h3>Book a Service</h3>
+
+    <div class="svc-pills" id="svcPills"></div>
+
+    <div class="field-group">
+      <label class="field-label">Problem *</label>
+      <select id="fProblem"></select>
+    </div>
+
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">Name *</label>
+        <input type="text" id="fName" placeholder="Your name">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Mobile *</label>
+        <input type="tel" id="fMobile" placeholder="10-digit number">
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">Area *</label>
+        <select id="fArea">
+          <option value="">Select</option>
+          <option>Jadugora</option><option>Galudih</option><option>Ghatsila</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Preferred Time</label>
+        <select id="fTime">
+          <option>As soon as possible</option>
+          <option>Today Evening</option>
+          <option>Tomorrow Morning</option>
+          <option>Tomorrow Evening</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Address *</label>
+      <textarea id="fAddress" rows="2" placeholder="House no, street, landmark"></textarea>
+    </div>
+
+    <p class="form-error" id="formError">Please fill all required fields marked with *</p>
+
+    <a href="#" id="bookingSubmitBtn" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="submitBookingForm(event)">Continue to Pay ₹49</a>
+  </div>
+</div>
+
+<div class="modal-overlay" id="payModalOverlay">
+  <div class="pay-modal">
+    <button class="modal-close" onclick="closePayModal()" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <h3 id="payModalTitle">Confirm Your Booking</h3>
+    <p style="font-size:13px; color:var(--text-faint);" id="payModalSummary">Scan & pay the visit charge</p>
+    <div class="amt" id="payModalAmt">₹49</div>
+    <div class="qr-box"><canvas id="upiQrCanvas"></canvas></div>
+    <p class="upi-id">Paying to <span>6206539534@ybl</span></p>
+    <div class="upi-app-grid">
+      <a href="#" id="upiLinkGpay" class="upi-app-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+        Google Pay
+      </a>
+      <a href="#" id="upiLinkPhonepe" class="upi-app-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 18h6"/></svg>
+        PhonePe
+      </a>
+      <a href="#" id="upiLinkPaytm" class="upi-app-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+        Paytm
+      </a>
+      <a href="#" id="upiLinkOther" class="upi-app-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.7 8 11 4.6-2.3 8-6 8-11V5l-8-3z"/></svg>
+        Other UPI App
+      </a>
+    </div>
+    <div id="trackBookingBtnWrap">
+      <button class="btn btn-ghost" style="width:100%; justify-content:center; margin-top:10px;" onclick="trackJustBookedJob()">Track This Booking</button>
+    </div>
+    <p class="hint" id="payModalHint">₹49 booking charge is fully adjusted against your final bill.</p>
+  </div>
+</div>
+
+<!-- COMPLETE JOB (technician enters final bill) -->
+<div class="modal-overlay" id="completeJobModalOverlay">
+  <div class="auth-modal">
+    <button class="modal-close" onclick="closeCompleteJobModal()" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <h3>Complete Job</h3>
+    <p class="sub">Enter the final bill amount and how the customer paid</p>
+    <input type="number" id="cAmount" placeholder="Final bill amount (₹)">
+    <div class="pay-mode-select">
+      <div class="pay-mode-opt active" id="modeOnlineBtn" onclick="setCompleteMode('online')">Paid Online</div>
+      <div class="pay-mode-opt" id="modeCashBtn" onclick="setCompleteMode('cash')">Paid Cash</div>
+    </div>
+    <p class="form-error" id="completeJobError">Please enter a valid amount.</p>
+    <a href="#" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:6px;" onclick="submitCompleteJob(event)">Mark Complete</a>
+  </div>
+</div>
+
+<!-- BILL (admin generates final invoice + collects payment) -->
+<div class="modal-overlay" id="billModalOverlay">
+  <div class="auth-modal" style="max-width:380px;">
+    <button class="modal-close" onclick="closeBillModal()" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <h3>Final Bill</h3>
+    <p class="sub">Job invoice — review before collecting payment</p>
+    <div class="bill-paper" id="billPaperContent"></div>
+    <a href="#" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="proceedToBillPayment(event)" id="billPayBtn">Collect Payment</a>
+  </div>
+</div>
+
+<!-- STAFF LOGIN -->
+<div class="modal-overlay" id="roleModalOverlay">
+  <div class="role-modal">
+    <button class="modal-close" onclick="closeRoleModal()" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <h3>Staff Login</h3>
+    <p class="sub">For Admin & Technician access only</p>
+    <button class="role-option" onclick="openAdminLogin()"><b>Admin</b><span>Manage bookings & assign technicians</span></button>
+    <button class="role-option" onclick="openTechLogin()"><b>Technician</b><span>View & update your assigned jobs</span></button>
+  </div>
+</div>
+
+<!-- ADMIN LOGIN -->
+<div class="modal-overlay" id="adminLoginOverlay">
+  <div class="auth-modal">
+    <button class="modal-close" onclick="closeAdminLogin()" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <span class="back-link" onclick="closeAdminLogin(); openRoleModal()">← Back</span>
+    <h3>Admin Login</h3>
+    <p class="sub">Enter your admin credentials</p>
+    <input type="text" id="adminUser" placeholder="Username">
+    <input type="password" id="adminPass" placeholder="Password">
+    <p class="form-error" id="adminLoginError">Invalid username or password.</p>
+    <a href="#" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:6px;" onclick="submitAdminLogin(event)">Login</a>
+  </div>
+</div>
+
+<!-- TECHNICIAN LOGIN -->
+<div class="modal-overlay" id="techLoginOverlay">
+  <div class="auth-modal">
+    <button class="modal-close" onclick="closeTechLogin()" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <span class="back-link" onclick="closeTechLogin(); openRoleModal()">← Back</span>
+    <h3>Technician Login</h3>
+    <p class="sub">Enter your technician credentials</p>
+    <input type="text" id="techUser" placeholder="Username">
+    <input type="password" id="techPass" placeholder="Password">
+    <p class="form-error" id="techLoginError">Invalid username or password.</p>
+    <a href="#" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:6px;" onclick="submitTechLogin(event)">Login</a>
+  </div>
+</div>
+
+<!-- BECOME A PARTNER (technician self-registration, admin-approved) -->
+<div class="modal-overlay" id="partnerModalOverlay">
+  <div class="partner-modal">
+    <button class="modal-close" onclick="closePartnerModal()" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+
+    <!-- STEP 1: Details -->
+    <div class="partner-step active" id="partnerStep1">
+      <span class="partner-step-badge">Step 1 of 2</span>
+      <h3 style="font-size:18px; font-weight:800; margin-bottom:4px;">Become a Partner</h3>
+      <p class="sub">Enter your details to get started</p>
+      <input type="text" id="pName" placeholder="Full name">
+      <input type="tel" id="pMobile" placeholder="Mobile number (10 digits)">
+      <select id="pService">
+        <option value="">Select your service</option>
+        <option>Electrician</option><option>Plumber</option><option>AC Repair</option>
+        <option>Gas Stove Repair</option><option>Appliance Repair</option><option>Civil Work</option><option>Painter</option>
+      </select>
+      <textarea id="pAddress" rows="2" placeholder="Your address / area (helps us assign you nearby jobs)"></textarea>
+      <p class="form-error" id="partnerStep1Error">Please fill all fields correctly.</p>
+      <a href="#" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:6px;" onclick="submitPartnerRegistration(event)" id="registerPartnerBtn">Register</a>
+    </div>
+
+    <!-- STEP 2: Success -->
+    <div class="partner-step" id="partnerStep3">
+      <div class="partner-success">
+        <div class="check-circle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </div>
+        <h3 style="font-size:18px; font-weight:800;">Registration Received!</h3>
+        <p class="sub">Save these login details. Your account is pending admin approval — you'll be able to login once approved.</p>
+        <div class="cred-box">
+          <div class="cred-row"><span style="color:var(--text-faint);">Username</span><b id="genUsername">—</b></div>
+          <div class="cred-row"><span style="color:var(--text-faint);">Password</span><b id="genPassword">—</b></div>
+        </div>
+        <a href="#" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="closePartnerModal()">Done</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TERMS & CONDITIONS -->
+<div class="modal-overlay" id="termsModalOverlay">
+  <div class="booking-modal" style="max-width:480px;">
+    <button class="modal-close" onclick="closeTermsModal()" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <h3>Terms & Conditions</h3>
+    <div style="font-size:13.5px; color:var(--text-dim); line-height:1.7; margin-top:14px;">
+      <p style="font-weight:700; color:var(--text); margin-bottom:4px;">1-Day Service Warranty</p>
+      <p style="margin-bottom:18px;">If the same problem happens again within 1 day of our technician completing the repair, we'll send someone back to fix it again at no extra charge.</p>
+
+      <p style="font-weight:700; color:var(--text); margin-bottom:4px;">Booking Amount</p>
+      <p style="margin-bottom:18px;">The ₹49 booking charge is adjusted against your final bill once the job is done. If our technician reaches your location and the service is not carried out for any reason on the customer's end, the ₹49 booking amount is non-refundable.</p>
+
+      <p style="font-weight:700; color:var(--text); margin-bottom:4px;">General</p>
+      <p>By booking a service on FixPro India, you agree to these terms. For any questions, reach out via the Contact Us section.</p>
+    </div>
+  </div>
+</div>
+
+<!-- TRACK BOOKING (guest lookup, no login needed) -->
+<div class="modal-overlay" id="trackLookupOverlay">
+  <div class="auth-modal">
+    <button class="modal-close" onclick="closeTrackLookup()" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <h3>Track Your Booking</h3>
+    <p class="sub">Enter the mobile number you booked with</p>
+    <input type="tel" id="trackMobile" placeholder="Mobile number">
+    <p class="form-error" id="trackLookupError">No bookings found for this number.</p>
+    <a href="#" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:6px;" onclick="submitTrackLookup(event)">View My Bookings</a>
+  </div>
+</div>
+
+<!-- MY BOOKINGS -->
+<div class="modal-overlay" id="myBookingsOverlay">
+  <div class="booking-modal" style="max-width:480px;">
+    <button class="modal-close" onclick="closeMyBookings()" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <h3>My Bookings</h3>
+    <div id="myBookingsList"></div>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div class="dash-overlay" id="adminDashboard">
+  <div class="dash-header">
+    <div class="wrap">
+      <div class="logo"><div class="logo-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#191202" stroke-width="2.4" stroke-linecap="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.8 2.8-2-2z"/></svg></div><div>Admin Dashboard</div></div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-ghost btn-sm" onclick="resetAllData()" style="color:#EF5555; border-color:rgba(239,85,85,0.3);">Reset All Data</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeDashboard('adminDashboard')">Back to Site</button>
+        <button class="btn btn-danger btn-sm" onclick="logoutAll()">Logout</button>
+      </div>
+    </div>
+  </div>
+  <div class="dash-body">
+    <div class="dash-stats" id="adminStats"></div>
+
+    <h3 style="font-size:18px; font-weight:800; margin-bottom:14px;">Earnings Overview</h3>
+    <div class="dash-stats" id="earningsStats" style="margin-bottom:28px;"></div>
+
+    <h3 style="font-size:18px; font-weight:800; margin-bottom:14px;">Technician-wise Collection</h3>
+    <div id="techEarningsList" style="margin-bottom:28px;"></div>
+
+    <h3 style="font-size:18px; font-weight:800; margin-bottom:14px;">Pending Technician Approvals</h3>
+    <div id="pendingTechsList" style="margin-bottom:28px;"></div>
+
+    <h3 style="font-size:18px; font-weight:800; margin-bottom:14px;">All Technicians — Login Credentials</h3>
+    <p style="font-size:12.5px; color:var(--text-faint); margin-bottom:14px;">Keep this private. Use these if a technician forgets their login.</p>
+    <div id="allTechsList" style="margin-bottom:28px;"></div>
+
+    <h3 style="font-size:18px; font-weight:800; margin-bottom:14px;">All Bookings</h3>
+    <div id="adminJobsList"></div>
+  </div>
+</div>
+
+<!-- TECHNICIAN DASHBOARD -->
+<div class="dash-overlay" id="technicianDashboard">
+  <div class="dash-header">
+    <div class="wrap">
+      <div class="logo"><div class="logo-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#191202" stroke-width="2.4" stroke-linecap="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.8 2.8-2-2z"/></svg></div><div id="techPanelTitle">Technician Panel</div></div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-ghost btn-sm" onclick="closeDashboard('technicianDashboard')">Back to Site</button>
+        <button class="btn btn-danger btn-sm" onclick="logoutAll()">Logout</button>
+      </div>
+    </div>
+  </div>
+  <div class="dash-body" style="max-width:600px;">
+    <div class="tech-welcome-card">
+      <div class="tech-welcome-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.7 8 11 4.6-2.3 8-6 8-11V5l-8-3z"/><path d="m9 12 2 2 4-4"/></svg>
+      </div>
+      <h4>Our Work Policy</h4>
+      <p>
+        <b>Agar aap imandari aur loyalty ke saath humare saath kaam karenge, toh aap humare saath bahut aage ja sakte hain.</b>
+        Lekin agar aap customers ke saath personal number share karke apna market banane ya company ko bypass karne ki koshish karenge,
+        toh aap future ke naye customers aur opportunities kho sakte hain.
+        Agar aap humare saath long-term kaam karna chahte hain, toh loyal aur professional rehna zaroori hai —
+        hum bhi aapki growth aur opportunities ko support karenge.
+      </p>
+    </div>
+    <div id="techJobsList"></div>
+  </div>
+</div>
+
+<a href="https://wa.me/916206539534" target="_blank" rel="noopener" class="wa-float" aria-label="Chat on WhatsApp">
+  <svg viewBox="0 0 24 24" fill="white"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.39 1.26 4.81L2 22l5.42-1.36a9.9 9.9 0 0 0 4.62 1.14h.01c5.46 0 9.9-4.45 9.9-9.91S17.5 2 12.04 2zm5.78 14.1c-.24.68-1.4 1.3-1.93 1.35-.5.05-1.05.24-3.54-.74-3-1.18-4.9-4.24-5.05-4.44-.15-.2-1.2-1.6-1.2-3.05 0-1.45.76-2.16 1.03-2.46.27-.3.6-.37.8-.37.2 0 .4 0 .58.01.19.01.44-.07.68.53.24.6.83 2.06.9 2.2.07.15.12.32.02.52-.1.2-.15.32-.3.5-.15.17-.31.38-.44.51-.15.15-.3.31-.13.6.17.3.76 1.26 1.64 2.04 1.13 1 2.08 1.32 2.38 1.47.3.15.47.13.65-.08.17-.2.74-.87.94-1.17.2-.3.4-.25.66-.15.27.1 1.72.81 2.02.96.3.15.5.22.57.35.08.13.08.75-.16 1.43z"/></svg>
+</a>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('service-worker.js').catch(() => {});
+    });
+  }
+
+  /* ============ INSTALL APP (PWA) ============ */
+  let deferredInstallPrompt = null;
+  const installBtn = document.getElementById('installBtn');
+
+  const isStandalone =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
+
+  if (isStandalone) {
+    installBtn.style.display = 'none';
+  }
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+  });
+
+  window.addEventListener('appinstalled', () => {
+    installBtn.style.display = 'none';
+    deferredInstallPrompt = null;
+  });
+
+  function isIOS(){
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  }
+
+  async function handleInstallClick(e){
+    e.preventDefault();
+
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      const choice = await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      if (choice.outcome === 'accepted') installBtn.style.display = 'none';
+      return;
+    }
+
+    if (isIOS()) {
+      alert('To install: tap the Share button (square with an arrow) in Safari, then choose "Add to Home Screen".');
+      return;
+    }
+
+    alert('To install this app, open your browser menu and look for "Install app" or "Add to Home screen".');
+  }
+
+  /* ============ STATE ============ */
+  /* ============ FIREBASE SETUP ============ */
+  // 👉 PASTE YOUR FIREBASE CONFIG HERE (replace the placeholder object below)
+  const firebaseConfig = {
+    apiKey: "AIzaSyBH_nOpmeA8eQqs8pDaDCv14BxZ-qV-Fik",
+    authDomain: "fixpro-india.firebaseapp.com",
+    projectId: "fixpro-india",
+    storageBucket: "fixpro-india.firebasestorage.app",
+    messagingSenderId: "88969643884",
+    appId: "1:88969643884:web:af9a62336eea6c5e669549",
+    measurementId: "G-KLWDLK1FKK"
+  };
+
+  const FIREBASE_CONFIGURED = firebaseConfig.apiKey !== "YOUR_API_KEY";
+  let dbRef = null;
+
+  if (FIREBASE_CONFIGURED) {
+    firebase.initializeApp(firebaseConfig);
+    dbRef = firebase.firestore();
+  } else {
+    console.warn("FixPro India: Firebase config not set yet. Running in local-only demo mode — bookings will not be saved permanently.");
+  }
+
+  /* ============ STATE ============ */
+  let bookingsCache = []; // local mirror of the Firestore 'bookings' collection
+  let TECHNICIANS = [];   // local mirror of the Firestore 'technicians' collection
+  const session = { adminAuthed: false, techId: null };
+  let lastBookedMobile = null;
+
+  // Called when actual data changes (new/updated booking or technician) —
+  // safe to rebuild the whole admin dashboard here since nothing was
+  // mid-interaction.
+  function rerenderOpenViews(){
+    if (document.getElementById('adminDashboard').classList.contains('open')) renderAdminDashboard();
+    if (document.getElementById('technicianDashboard').classList.contains('open')) renderTechDashboard();
+    if (document.getElementById('myBookingsOverlay').classList.contains('open')) renderMyBookings();
+  }
+
+  // Called every second — only updates the timer text nodes directly via
+  // the DOM (no innerHTML rebuild). This is what keeps elapsed-time
+  // counters live WITHOUT reloading the map iframe or replaying entrance
+  // animations every second (which was causing the whole panel to look
+  // like it was constantly refreshing/flickering).
+  function tickOpenViews(){
+    document.querySelectorAll('.live-timer').forEach(el => {
+      const start = Number(el.dataset.start);
+      if (start) el.textContent = formatElapsed(start);
+    });
+  }
+
+  if (FIREBASE_CONFIGURED) {
+    dbRef.collection('bookings').orderBy('createdAt', 'asc').onSnapshot((snapshot) => {
+      bookingsCache = snapshot.docs.map(doc => ({ ...doc.data(), _id: doc.id }));
+      rerenderOpenViews();
+    }, (err) => console.error('Firestore listener error:', err));
+
+    dbRef.collection('technicians').onSnapshot((snapshot) => {
+      TECHNICIANS = snapshot.docs.map(doc => ({ ...doc.data(), _id: doc.id, id: doc.id }));
+      rerenderOpenViews();
+    }, (err) => console.error('Firestore technicians listener error:', err));
+  }
+
+  /* ---- Get next sequential job number safely (Firestore transaction) ---- */
+  async function getNextJobNo(){
+    if (!FIREBASE_CONFIGURED){
+      // Local fallback so the demo still works before Firebase is connected
+      window._localJobCounter = (window._localJobCounter || 0) + 1;
+      return 'FPI' + String(window._localJobCounter).padStart(3, '0');
+    }
+    const counterDoc = dbRef.collection('meta').doc('jobCounter');
+    return dbRef.runTransaction(async (t) => {
+      const snap = await t.get(counterDoc);
+      const current = snap.exists ? snap.data().value : 0;
+      const next = current + 1;
+      t.set(counterDoc, { value: next });
+      return 'FPI' + String(next).padStart(3, '0');
+    });
+  }
+
+  /* ---- Get next sequential technician ID (TECH001, TECH002...) ---- */
+  async function getNextTechId(){
+    if (!FIREBASE_CONFIGURED){
+      window._localTechCounter = (window._localTechCounter || 0) + 1;
+      return 'TECH' + String(window._localTechCounter).padStart(3, '0');
+    }
+    const counterDoc = dbRef.collection('meta').doc('techCounter');
+    return dbRef.runTransaction(async (t) => {
+      const snap = await t.get(counterDoc);
+      const current = snap.exists ? snap.data().value : 0;
+      const next = current + 1;
+      t.set(counterDoc, { value: next });
+      return 'TECH' + String(next).padStart(3, '0');
+    });
+  }
+
+  /* ============================================================
+     Technicians self-register via the "Become a Partner" flow and
+     get an auto-generated login ID and password (saved to Firestore).
+     New registrations need Admin approval (from the Admin Dashboard)
+     before they can log in.
+     ============================================================ */
+  const ADMIN_CREDS = { username: 'admin', password: 'Bittutunuk@4444' };
+
+  const STATUS_LABEL = {
+    pending: 'Pending', assigned: 'Assigned', on_the_way: 'On The Way',
+    in_progress: 'Work In Progress', completed: 'Completed', cancelled: 'Cancelled'
+  };
+
+  function formatElapsed(startTime){
+    if (!startTime) return '00:00';
+    const diff = Math.max(0, Math.floor((Date.now() - startTime) / 1000));
+    const m = String(Math.floor(diff/60)).padStart(2,'0');
+    const s = String(diff%60).padStart(2,'0');
+    return `${m}:${s}`;
+  }
+
+  function closeAllModals(){
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+  }
+
+  /* ---- Role select ---- */
+  function openRoleModal(e){ if (e) e.preventDefault(); closeAllModals(); document.getElementById('roleModalOverlay').classList.add('open'); }
+  function closeRoleModal(){ document.getElementById('roleModalOverlay').classList.remove('open'); }
+
+  /* ---- Admin auth ---- */
+  function openAdminLogin(){ closeAllModals(); document.getElementById('adminLoginError').classList.remove('show'); document.getElementById('adminLoginOverlay').classList.add('open'); }
+  function closeAdminLogin(){ document.getElementById('adminLoginOverlay').classList.remove('open'); }
+  function submitAdminLogin(e){
+    e.preventDefault();
+    const u = document.getElementById('adminUser').value.trim();
+    const p = document.getElementById('adminPass').value;
+    const err = document.getElementById('adminLoginError');
+    if (u === ADMIN_CREDS.username && p === ADMIN_CREDS.password){
+      err.classList.remove('show');
+      session.adminAuthed = true;
+      closeAdminLogin();
+      openDashboard('adminDashboard');
+      renderAdminDashboard();
+    } else {
+      err.classList.add('show');
+    }
+  }
+
+  /* ---- Technician auth ---- */
+  function openTechLogin(){ closeAllModals(); document.getElementById('techLoginError').classList.remove('show'); document.getElementById('techLoginOverlay').classList.add('open'); }
+  function closeTechLogin(){ document.getElementById('techLoginOverlay').classList.remove('open'); }
+  function submitTechLogin(e){
+    e.preventDefault();
+    const u = document.getElementById('techUser').value.trim().toLowerCase();
+    const p = document.getElementById('techPass').value;
+    const err = document.getElementById('techLoginError');
+    const tech = TECHNICIANS.find(t => t.username === u && t.password === p);
+    if (tech && !tech.approved){
+      err.textContent = 'Your account is pending admin approval. Please wait or contact support.';
+      err.classList.add('show');
+      return;
+    }
+    if (tech){
+      err.classList.remove('show');
+      session.techId = tech.id;
+      closeTechLogin();
+      document.getElementById('techPanelTitle').textContent = `${tech.name} · ${tech.service}`;
+      openDashboard('technicianDashboard');
+      renderTechDashboard();
+      startLocationSharing(tech.id);
+    } else {
+      err.textContent = 'Invalid username or password.';
+      err.classList.add('show');
+    }
+  }
+
+  /* ---- Live location sharing (technician's browser GPS) ---- */
+  let locationWatchId = null;
+  let lastLocationWriteAt = 0;
+
+  function startLocationSharing(techId){
+    if (!navigator.geolocation){
+      console.warn('Geolocation not supported on this device/browser.');
+      return;
+    }
+    if (locationWatchId !== null) return; // already watching
+
+    locationWatchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const now = Date.now();
+        if (now - lastLocationWriteAt < 12000) return; // throttle to ~every 12s
+        lastLocationWriteAt = now;
+
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+
+        const activeJobs = bookingsCache.filter(b =>
+          b.technicianId === techId && ['on_the_way', 'in_progress'].includes(b.status)
+        );
+        activeJobs.forEach(b => {
+          updateBooking(b.jobNo, { techLat: lat, techLng: lng, techLocAt: now });
+        });
+      },
+      (err) => console.warn('Location permission denied or unavailable:', err.message),
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+    );
+  }
+
+  function stopLocationSharing(){
+    if (locationWatchId !== null && navigator.geolocation){
+      navigator.geolocation.clearWatch(locationWatchId);
+      locationWatchId = null;
+    }
+  }
+
+  /* ---- Book Now (direct, no login) ---- */
+  function handleBookNowClick(e, preselectService){
+    e.preventDefault();
+    openBookingModal(null, preselectService);
+  }
+
+  /* ---- Track Booking (guest lookup by mobile, no login) ---- */
+  let currentTrackMobile = null;
+
+  function handleTrackBookingClick(e){
+    e.preventDefault();
+    closeAllModals();
+    document.getElementById('trackLookupError').classList.remove('show');
+    document.getElementById('trackMobile').value = '';
+    document.getElementById('trackLookupOverlay').classList.add('open');
+  }
+  function closeTrackLookup(){ document.getElementById('trackLookupOverlay').classList.remove('open'); }
+
+  function openTermsModal(e){
+    if (e) e.preventDefault();
+    closeAllModals();
+    document.getElementById('termsModalOverlay').classList.add('open');
+  }
+  function closeTermsModal(){ document.getElementById('termsModalOverlay').classList.remove('open'); }
+
+  function submitTrackLookup(e){
+    e.preventDefault();
+    const mobile = document.getElementById('trackMobile').value.trim();
+    const err = document.getElementById('trackLookupError');
+    const found = bookingsCache.filter(b => b.mobile === mobile);
+    if (!mobile || found.length === 0){
+      err.classList.add('show');
+      return;
+    }
+    err.classList.remove('show');
+    currentTrackMobile = mobile;
+    closeTrackLookup();
+    openMyBookings();
+  }
+
+  function trackJustBookedJob(){
+    closePayModal();
+    currentTrackMobile = lastBookedMobile;
+    openMyBookings();
+  }
+
+  function payFinalBill(jobNo){
+    const b = bookingsCache.find(x => x.jobNo === jobNo);
+    if (!b) return;
+    closeAllModals();
+    openPayModal({
+      amount: b.finalAmount,
+      title: 'Pay Final Bill',
+      note: 'FixPro India Bill - ' + b.jobNo,
+      hint: `Final bill for job ${b.jobNo} — ${b.service} (${b.problem}).`,
+      showTrack: false
+    });
+    document.getElementById('payModalSummary').textContent = `${b.service} — ${b.problem} · Job No: ${b.jobNo}`;
+  }
+
+  /* ---- Become a Partner (technician self-registration, admin-approved) ---- */
+  function openPartnerModal(e){
+    if (e) e.preventDefault();
+    closeAllModals();
+    goToPartnerStep(1);
+    document.getElementById('pName').value = '';
+    document.getElementById('pMobile').value = '';
+    document.getElementById('pService').value = '';
+    document.getElementById('pAddress').value = '';
+    document.getElementById('partnerStep1Error').classList.remove('show');
+    document.getElementById('partnerModalOverlay').classList.add('open');
+  }
+  function closePartnerModal(){
+    document.getElementById('partnerModalOverlay').classList.remove('open');
+  }
+  function goToPartnerStep(n){
+    document.querySelectorAll('.partner-step').forEach(el => el.classList.remove('active'));
+    document.getElementById('partnerStep' + n).classList.add('active');
+  }
+
+  async function submitPartnerRegistration(e){
+    e.preventDefault();
+    const name = document.getElementById('pName').value.trim();
+    const mobile = document.getElementById('pMobile').value.trim();
+    const service = document.getElementById('pService').value;
+    const address = document.getElementById('pAddress').value.trim();
+    const err = document.getElementById('partnerStep1Error');
+
+    if (!name || !/^[0-9]{10}$/.test(mobile) || !service || !address){
+      err.textContent = 'Please enter a valid name, 10-digit mobile number, address, and select a service.';
+      err.classList.add('show');
+      return;
+    }
+    err.classList.remove('show');
+
+    const btn = document.getElementById('registerPartnerBtn');
+    btn.textContent = 'Registering...';
+
+    const techId = await getNextTechId();
+    const generatedPassword = String(Math.floor(100000 + Math.random() * 900000));
+
+    const techDoc = {
+      techId,
+      username: mobile,
+      password: generatedPassword,
+      name,
+      mobile,
+      service,
+      address,
+      rating: 5.0,
+      approved: false,
+      createdAt: Date.now()
+    };
+
+    if (FIREBASE_CONFIGURED){
+      try {
+        await dbRef.collection('technicians').doc(techId).set(techDoc);
+      } catch (err2){
+        console.error('Registration failed:', err2);
+        err.textContent = 'Could not register. Please check your internet connection and try again.';
+        err.classList.add('show');
+        btn.textContent = 'Register';
+        return;
+      }
+    }
+
+    document.getElementById('genUsername').textContent = mobile;
+    document.getElementById('genPassword').textContent = generatedPassword;
+    goToPartnerStep(3);
+    btn.textContent = 'Register';
+  }
+
+  /* ---- My Bookings (guest tracking view) ---- */
+  function openMyBookings(e){
+    if (e) e.preventDefault();
+    closeAllModals();
+    renderMyBookings();
+    document.getElementById('myBookingsOverlay').classList.add('open');
+  }
+  function closeMyBookings(){ document.getElementById('myBookingsOverlay').classList.remove('open'); }
+
+  function renderMyBookings(){
+    const list = document.getElementById('myBookingsList');
+    const mine = bookingsCache.filter(b => b.mobile === currentTrackMobile).slice().reverse();
+    if (mine.length === 0){
+      list.innerHTML = `<p style="font-size:13.5px; color:var(--text-faint);">No bookings found.</p>`;
+      return;
+    }
+    list.innerHTML = mine.map(b => jobRowHtml(b, 'customer')).join('');
+  }
+
+  function logoutAll(){
+    session.adminAuthed = false;
+    session.techId = null;
+    stopLocationSharing();
+    document.getElementById('adminDashboard').classList.remove('open');
+    document.getElementById('technicianDashboard').classList.remove('open');
+    closeAllModals();
+  }
+
+  function openDashboard(id){ closeAllModals(); document.getElementById(id).classList.add('open'); }
+  function closeDashboard(id){ document.getElementById(id).classList.remove('open'); }
+
+  /* ---- Admin dashboard render ---- */
+  function renderAdminDashboard(){
+    const total = bookingsCache.length;
+    const pending = bookingsCache.filter(b => b.status === 'pending').length;
+    const active = bookingsCache.filter(b => ['assigned','on_the_way','in_progress'].includes(b.status)).length;
+    const completed = bookingsCache.filter(b => b.status === 'completed').length;
+
+    document.getElementById('adminStats').innerHTML = [
+      ['Total', total], ['Pending', pending], ['Active', active], ['Completed', completed]
+    ].map(([label,val]) => `<div class="dash-stat"><b>${val}</b><span>${label}</span></div>`).join('');
+
+    /* Earnings calculations */
+    const notCancelled = bookingsCache.filter(b => b.status !== 'cancelled');
+    const bookingChargeTotal = notCancelled.length * 49;
+
+    const billedJobs = bookingsCache.filter(b => b.billGenerated);
+    const cashJobs = billedJobs.filter(b => b.paymentMode === 'cash');
+    const onlineJobs = billedJobs.filter(b => b.paymentMode === 'online');
+    const totalCollection = billedJobs.reduce((s, b) => s + (Number(b.finalAmount) || 0), 0);
+    const cashTotal = cashJobs.reduce((s, b) => s + (Number(b.finalAmount) || 0), 0);
+    const onlineTotal = onlineJobs.reduce((s, b) => s + (Number(b.finalAmount) || 0), 0);
+    const commissionFromCash = cashJobs.length * 49;
+
+    document.getElementById('earningsStats').innerHTML = [
+      ['₹' + bookingChargeTotal, 'Booking Charges (₹49 × ' + notCancelled.length + ')'],
+      ['₹' + totalCollection, 'Total Final Collection'],
+      ['₹' + onlineTotal, 'Received Online (Admin)'],
+      ['₹' + cashTotal, 'Collected as Cash (Technicians)']
+    ].map(([val, label]) => `<div class="dash-stat money"><b>${val}</b><span>${label}</span></div>`).join('');
+
+    /* Technician-wise breakdown */
+    const techList = document.getElementById('techEarningsList');
+    const techsWithJobs = TECHNICIANS.filter(t => billedJobs.some(b => b.technicianId === t.id));
+    if (techsWithJobs.length === 0){
+      techList.innerHTML = `<p style="font-size:13.5px; color:var(--text-faint);">No completed & billed jobs yet.</p>`;
+    } else {
+      techList.innerHTML = techsWithJobs.map(t => {
+        const jobs = billedJobs.filter(b => b.technicianId === t.id);
+        const tCash = jobs.filter(b => b.paymentMode === 'cash');
+        const tOnline = jobs.filter(b => b.paymentMode === 'online');
+        const tCashTotal = tCash.reduce((s, b) => s + (Number(b.finalAmount) || 0), 0);
+        const tOnlineTotal = tOnline.reduce((s, b) => s + (Number(b.finalAmount) || 0), 0);
+        const tTotal = tCashTotal + tOnlineTotal;
+        const tCommission = tCash.length * 49;
+        return `
+          <div class="earn-row">
+            <div>
+              <div class="earn-name">${t.name} — ${t.service}</div>
+              <div class="earn-sub">${jobs.length} job${jobs.length !== 1 ? 's' : ''} · Cash: ${tCash.length} (₹${tCashTotal}) · Online: ${tOnline.length} (₹${tOnlineTotal}) · Commission collected: ₹${tCommission}</div>
+            </div>
+            <div class="earn-amounts">
+              <b>₹${tTotal}</b>
+              total billed
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    const pendingTechs = TECHNICIANS.filter(t => !t.approved);
+    const pendingList = document.getElementById('pendingTechsList');
+    if (pendingTechs.length === 0){
+      pendingList.innerHTML = `<p style="font-size:13.5px; color:var(--text-faint);">No pending approvals.</p>`;
+    } else {
+      pendingList.innerHTML = pendingTechs.map(t => `
+        <div class="job-row">
+          <div class="job-top">
+            <div>
+              <div style="font-weight:700; font-size:14.5px;">${t.name} — ${t.service}</div>
+              <div class="job-meta"><span>Username: ${t.mobile}</span><span>Password: ${t.password}</span><span>ID: ${t.techId}</span></div>
+              <div class="job-meta" style="margin-top:2px;">${t.address || ''}</div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-primary btn-sm" onclick="approveTechnician('${t.techId}')">Approve</button>
+              <button class="btn btn-danger btn-sm" onclick="rejectTechnician('${t.techId}')">Reject</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    const allTechsList = document.getElementById('allTechsList');
+    if (TECHNICIANS.length === 0){
+      allTechsList.innerHTML = `<p style="font-size:13.5px; color:var(--text-faint);">No technicians registered yet.</p>`;
+    } else {
+      allTechsList.innerHTML = TECHNICIANS.slice().reverse().map(t => `
+        <div class="cred-list-row">
+          <div class="cred-list-info">
+            <div class="cred-list-name">
+              ${t.name}
+              <span class="status-pill-mini ${t.approved ? 'approved' : 'pending'}">${t.approved ? 'Approved' : 'Pending'}</span>
+            </div>
+            <div class="cred-list-sub">${t.service}${t.address ? ' · ' + t.address : ''}</div>
+          </div>
+          <div class="cred-pill-group">
+            <div class="cred-pill">👤 ${t.mobile} <button onclick="copyToClipboard('${t.mobile}', this)">Copy</button></div>
+            <div class="cred-pill">🔑 ${t.password} <button onclick="copyToClipboard('${t.password}', this)">Copy</button></div>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="rejectTechnician('${t.techId}')">Remove</button>
+        </div>
+      `).join('');
+    }
+
+    const list = document.getElementById('adminJobsList');
+    if (bookingsCache.length === 0){
+      list.innerHTML = `<p style="font-size:13.5px; color:var(--text-faint);">No bookings yet.</p>`;
+      return;
+    }
+    list.innerHTML = bookingsCache.slice().reverse().map(b => jobRowHtml(b, 'admin')).join('');
+  }
+
+  function copyToClipboard(text, btnEl){
+    navigator.clipboard.writeText(text).then(() => {
+      const original = btnEl.textContent;
+      btnEl.textContent = 'Copied!';
+      setTimeout(() => { btnEl.textContent = original; }, 1200);
+    }).catch(() => alert('Could not copy — please copy manually: ' + text));
+  }
+
+  async function resetAllData(){
+    if (!FIREBASE_CONFIGURED){ alert('Not connected to Firebase yet.'); return; }
+    if (!confirm('This will PERMANENTLY delete ALL bookings and ALL technicians. This cannot be undone. Continue?')) return;
+    if (!confirm('Are you absolutely sure? This wipes the entire database clean.')) return;
+
+    try {
+      const [bookingsSnap, techSnap] = await Promise.all([
+        dbRef.collection('bookings').get(),
+        dbRef.collection('technicians').get()
+      ]);
+      const batch = dbRef.batch();
+      bookingsSnap.forEach(doc => batch.delete(doc.ref));
+      techSnap.forEach(doc => batch.delete(doc.ref));
+      batch.set(dbRef.collection('meta').doc('jobCounter'), { value: 0 });
+      batch.set(dbRef.collection('meta').doc('techCounter'), { value: 0 });
+      await batch.commit();
+      alert('All data has been reset. The app will now refresh.');
+      location.reload();
+    } catch (err){
+      console.error('Reset failed:', err);
+      alert('Could not reset data. Please check your internet connection and try again.');
+    }
+  }
+
+  async function approveTechnician(techId){
+    if (FIREBASE_CONFIGURED){
+      try {
+        await dbRef.collection('technicians').doc(techId).update({ approved: true });
+      } catch (err){
+        console.error('Failed to approve technician:', err);
+        alert('Could not approve. Check your internet connection.');
+      }
+    } else {
+      const t = TECHNICIANS.find(x => x.techId === techId);
+      if (t) t.approved = true;
+      renderAdminDashboard();
+    }
+  }
+
+  async function rejectTechnician(techId){
+    if (!confirm('Remove this registration? This cannot be undone.')) return;
+    if (FIREBASE_CONFIGURED){
+      try {
+        await dbRef.collection('technicians').doc(techId).delete();
+      } catch (err){
+        console.error('Failed to reject technician:', err);
+        alert('Could not remove. Check your internet connection.');
+      }
+    } else {
+      TECHNICIANS = TECHNICIANS.filter(x => x.techId !== techId);
+      renderAdminDashboard();
+    }
+  }
+
+  /* ---- Technician dashboard render ---- */
+  function renderTechDashboard(){
+    const list = document.getElementById('techJobsList');
+    const myJobs = bookingsCache.filter(b => b.technicianId === session.techId && !['completed','cancelled'].includes(b.status));
+    const done = bookingsCache.filter(b => b.technicianId === session.techId && b.status === 'completed');
+
+    let html = '';
+    if (myJobs.length === 0){
+      html += `<div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 12h18"/></svg>
+        <p>No active jobs right now — new assignments will show up here.</p>
+      </div>`;
+    } else {
+      html += myJobs.map(b => jobRowHtml(b, 'technician')).join('');
+    }
+    if (done.length > 0){
+      html += `<p style="font-size:11.5px; font-weight:700; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.05em; margin:18px 0 8px;">Completed</p>`;
+      html += done.map(b => `<div class="job-meta" style="margin-bottom:6px;"><span class="job-tag">${b.jobNo}</span> ${b.service} — ${b.problem}</div>`).join('');
+    }
+    list.innerHTML = html;
+  }
+
+  /* ---- Real Google Map embed using the technician's live GPS coordinates ---- */
+  function liveMapHtml(b){
+    if (!b.techLat || !b.techLng){
+      return `<div class="live-map-placeholder">Waiting for technician to start sharing live location…</div>`;
+    }
+    const isStale = b.techLocAt && (Date.now() - b.techLocAt > 90000);
+    const mapSrc = `https://maps.google.com/maps?q=${b.techLat},${b.techLng}&z=15&output=embed`;
+    const openSrc = `https://www.google.com/maps?q=${b.techLat},${b.techLng}`;
+    return `
+      <div class="live-map-wrap">
+        <iframe src="${mapSrc}" width="100%" height="180" style="border:0; border-radius:12px;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        <div class="live-map-footer">
+          <span>${isStale ? '⚠ Location may be outdated' : '● Live location'}</span>
+          <a href="${openSrc}" target="_blank" rel="noopener">Open in Google Maps ↗</a>
+        </div>
+      </div>`;
+  }
+
+  /* ---- Shared job row renderer ---- */
+  function jobRowHtml(b, viewer){
+    const tech = b.technicianId ? TECHNICIANS.find(t => t.id === b.technicianId) : null;
+    let inner = `
+      <div class="job-top">
+        <div>
+          <div style="font-weight:700; font-size:14.5px;">${b.service} — ${b.problem}</div>
+          <div style="margin-top:4px;"><span class="job-tag">${b.jobNo}</span></div>
+        </div>
+        <span class="status-tag st-${b.status}">${STATUS_LABEL[b.status]}</span>
+      </div>`;
+
+    if (viewer === 'admin'){
+      inner += `<div class="job-meta">
+        <span>${b.name}</span><span>${b.mobile}</span><span>${b.address}, ${b.area}</span>
+      </div>`;
+      if (b.status === 'pending'){
+        const eligible = TECHNICIANS.filter(t => t.service === b.service && t.approved);
+        inner += `<div class="assign-row">
+          <select id="assign-${b.jobNo}">
+            <option value="" disabled selected>Select technician</option>
+            ${eligible.map(t => `<option value="${t.id}">${t.name} — ${t.address ? t.address.slice(0, 30) : t.service}</option>`).join('')}
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="assignTechnician('${b.jobNo}')">Assign</button>
+          <button class="btn btn-danger btn-sm" onclick="cancelBooking('${b.jobNo}')">Cancel</button>
+        </div>`;
+      } else if (tech){
+        inner += `<p style="font-size:12.5px; color:var(--text-dim); margin-top:8px;">Assigned to <b>${tech.name}</b>${b.techLat && b.techLng ? ` — <a href="https://www.google.com/maps?q=${b.techLat},${b.techLng}" target="_blank" rel="noopener" style="color:var(--accent); font-weight:700;">View live location ↗</a>` : ''}</p>`;
+      }
+      if (b.status === 'completed'){
+        if (b.billGenerated){
+          inner += `<p style="font-size:12.5px; color:var(--teal); margin-top:8px; font-weight:700;">✓ Bill collected — ₹${b.finalAmount} (${b.paymentMode === 'cash' ? 'Cash' : 'Online'})</p>`;
+        } else {
+          inner += `<button class="btn btn-primary btn-sm" style="margin-top:8px;" onclick="openBillModal('${b.jobNo}')">Generate Bill — ₹${b.finalAmount || 0}</button>`;
+        }
+      }
+    }
+
+    if (viewer === 'technician'){
+      inner += `<div class="job-meta"><span>${b.name}</span><span>${b.address}, ${b.area}</span></div>`;
+      if (b.details) inner += `<div class="job-meta" style="margin-top:2px;">Note: ${b.details}</div>`;
+      inner += `<p class="privacy-note">Customer's phone number is only visible to admin.</p>`;
+      if (b.status === 'in_progress'){
+        inner += `<p style="font-size:13px; font-weight:700; color:var(--accent); margin-top:8px;">⏱ <span class="live-timer" data-start="${b.startTime}">${formatElapsed(b.startTime)}</span></p>`;
+      }
+      if (b.status === 'assigned'){
+        inner += `<button class="btn btn-primary btn-sm" style="margin-top:10px; width:100%; justify-content:center;" onclick="startTravel('${b.jobNo}')">Start — On My Way</button>`;
+      } else if (b.status === 'on_the_way'){
+        inner += `<button class="btn btn-primary btn-sm" style="margin-top:10px; width:100%; justify-content:center;" onclick="startWork('${b.jobNo}')">Arrived — Start Work</button>`;
+      } else if (b.status === 'in_progress'){
+        inner += `<button class="btn btn-primary btn-sm" style="margin-top:10px; width:100%; justify-content:center;" onclick="openCompleteJobModal('${b.jobNo}')">Work Complete</button>`;
+      }
+    }
+
+    if (viewer === 'customer'){
+      if (b.status === 'pending'){
+        inner += `<p style="font-size:13px; color:var(--text-dim); margin-top:8px;">Waiting for a technician to be assigned.</p>`;
+      }
+      if (tech && b.status !== 'pending'){
+        inner += `<div class="job-meta" style="margin-top:8px;">
+          <span>${tech.name} · ${tech.service} · ★ ${tech.rating}</span>
+        </div>
+        <p class="privacy-note">Technician's phone stays private — contact via in-app chat.</p>`;
+      }
+      if (b.status === 'on_the_way'){
+        inner += `<p style="font-size:13px; font-weight:700; color:#B98CFF; margin-top:6px;">Technician is on the way — Arriving in ${b.etaMin} min</p>`;
+        inner += liveMapHtml(b);
+      }
+      if (b.status === 'in_progress'){
+        inner += `<p style="font-size:13px; font-weight:700; color:var(--accent); margin-top:8px;">⏱ Work in progress — <span class="live-timer" data-start="${b.startTime}">${formatElapsed(b.startTime)}</span></p>`;
+        inner += liveMapHtml(b);
+      }
+      if (b.status === 'completed'){
+        inner += `<p style="font-size:13px; font-weight:700; color:var(--teal); margin-top:8px;">✓ Work completed${b.startTime && b.completedAt ? ' in ' + formatElapsed(b.startTime) : ''}</p>`;
+        if (b.billGenerated){
+          inner += `
+            <div class="bill-paper" style="margin-top:12px;">
+              <div class="bill-head"><b>FixPro India</b><br><span style="font-size:11px; color:#666;">Service Invoice</span></div>
+              <div class="bill-row"><span>Service</span><span>${b.service} — ${b.problem}</span></div>
+              <div class="bill-row"><span>Payment Mode</span><span>${b.paymentMode === 'cash' ? 'Cash' : 'Online'}</span></div>
+              <div class="bill-total"><span>${b.paymentMode === 'cash' ? 'Paid to Technician' : 'Amount Due'}</span><span>₹${b.finalAmount}</span></div>
+            </div>`;
+          if (b.paymentMode !== 'cash'){
+            inner += `<button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:10px;" onclick="payFinalBill('${b.jobNo}')">Pay Now — ₹${b.finalAmount}</button>`;
+          }
+        } else {
+          inner += `<p style="font-size:12px; color:var(--text-faint); margin-top:6px;">Your final bill will appear here shortly.</p>`;
+        }
+      }
+      if (b.status === 'cancelled'){
+        inner += `<p style="font-size:13px; color:#EF5555; margin-top:8px;">This request was cancelled.</p>`;
+      }
+    }
+
+    return `<div class="job-row">${inner}</div>`;
+  }
+
+  /* ---- Booking lifecycle actions ---- */
+  async function updateBooking(jobNo, changes){
+    const b = bookingsCache.find(x => x.jobNo === jobNo);
+    if (!b) return;
+    if (FIREBASE_CONFIGURED && b._id){
+      try {
+        await dbRef.collection('bookings').doc(b._id).update(changes);
+        // onSnapshot listener will refresh bookingsCache + re-render automatically
+      } catch (err){
+        console.error('Failed to update booking:', err);
+        alert('Could not update booking. Check your internet connection.');
+      }
+    } else {
+      Object.assign(b, changes);
+      rerenderOpenViews();
+    }
+  }
+
+  function assignTechnician(jobNo){
+    const sel = document.getElementById(`assign-${jobNo}`);
+    if (!sel || !sel.value) return;
+    updateBooking(jobNo, { status: 'assigned', technicianId: sel.value });
+  }
+  function cancelBooking(jobNo){
+    updateBooking(jobNo, { status: 'cancelled' });
+  }
+  function startTravel(jobNo){
+    updateBooking(jobNo, { status: 'on_the_way', etaMin: 8 + Math.floor(Math.random()*8) });
+  }
+  function startWork(jobNo){
+    updateBooking(jobNo, { status: 'in_progress', startTime: Date.now() });
+  }
+  function completeWork(jobNo, finalAmount, paymentMode){
+    updateBooking(jobNo, {
+      status: 'completed',
+      completedAt: Date.now(),
+      finalAmount: finalAmount,
+      paymentMode: paymentMode,
+      billGenerated: false
+    });
+  }
+
+  /* ---- Complete Job (technician enters final bill) ---- */
+  let completingJobNo = null;
+  let completeMode = 'online';
+
+  function openCompleteJobModal(jobNo){
+    completingJobNo = jobNo;
+    completeMode = 'online';
+    document.getElementById('cAmount').value = '';
+    document.getElementById('completeJobError').classList.remove('show');
+    setCompleteMode('online');
+    closeAllModals();
+    document.getElementById('completeJobModalOverlay').classList.add('open');
+  }
+  function closeCompleteJobModal(){
+    document.getElementById('completeJobModalOverlay').classList.remove('open');
+  }
+  function setCompleteMode(mode){
+    completeMode = mode;
+    document.getElementById('modeOnlineBtn').classList.toggle('active', mode === 'online');
+    document.getElementById('modeCashBtn').classList.toggle('active', mode === 'cash');
+  }
+  function submitCompleteJob(e){
+    e.preventDefault();
+    const amount = parseFloat(document.getElementById('cAmount').value);
+    const err = document.getElementById('completeJobError');
+    if (!amount || amount <= 0){
+      err.classList.add('show');
+      return;
+    }
+    err.classList.remove('show');
+    completeWork(completingJobNo, amount, completeMode);
+    closeCompleteJobModal();
+  }
+
+  /* ---- Bill generation (admin) ---- */
+  let currentBillJobNo = null;
+
+  function openBillModal(jobNo){
+    const b = bookingsCache.find(x => x.jobNo === jobNo);
+    if (!b) return;
+    currentBillJobNo = jobNo;
+    const tech = b.technicianId ? TECHNICIANS.find(t => t.id === b.technicianId) : null;
+    const dateStr = new Date(b.completedAt || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+    document.getElementById('billPaperContent').innerHTML = `
+      <div class="bill-head">
+        <b>FixPro India</b><br>
+        <span style="font-size:11px; color:#666;">Service Invoice</span>
+      </div>
+      <div class="bill-row"><span>Job No</span><span>${b.jobNo}</span></div>
+      <div class="bill-row"><span>Date</span><span>${dateStr}</span></div>
+      <div class="bill-row"><span>Customer</span><span>${b.name}</span></div>
+      <div class="bill-row"><span>Service</span><span>${b.service} — ${b.problem}</span></div>
+      <div class="bill-row"><span>Technician</span><span>${tech ? tech.name : '—'}</span></div>
+      <div class="bill-row"><span>Payment Mode</span><span>${b.paymentMode === 'cash' ? 'Cash (collected by technician)' : 'Online'}</span></div>
+      <div class="bill-total"><span>Total Amount</span><span>₹${b.finalAmount}</span></div>
+    `;
+
+    const payBtn = document.getElementById('billPayBtn');
+    payBtn.textContent = b.paymentMode === 'cash'
+      ? 'Collect ₹49 Commission from Technician'
+      : 'Collect Payment from Customer';
+
+    closeAllModals();
+    document.getElementById('billModalOverlay').classList.add('open');
+  }
+  function closeBillModal(){
+    document.getElementById('billModalOverlay').classList.remove('open');
+  }
+  async function proceedToBillPayment(e){
+    e.preventDefault();
+    const b = bookingsCache.find(x => x.jobNo === currentBillJobNo);
+    if (!b) return;
+
+    await updateBooking(currentBillJobNo, { billGenerated: true });
+    closeBillModal();
+
+    if (b.paymentMode === 'cash'){
+      openPayModal({
+        amount: 49,
+        title: 'Collect Commission',
+        note: 'FixPro India Commission - ' + b.jobNo,
+        hint: `Customer paid ₹${b.finalAmount} cash to the technician. Collect the ₹49 booking commission from the technician here.`,
+        showTrack: false
+      });
+    } else {
+      openPayModal({
+        amount: b.finalAmount,
+        title: 'Collect Payment',
+        note: 'FixPro India Bill - ' + b.jobNo,
+        hint: `Final bill for job ${b.jobNo}. Show this QR to the customer to collect ₹${b.finalAmount}.`,
+        showTrack: false
+      });
+    }
+    document.getElementById('payModalSummary').textContent = `${b.service} — ${b.problem} for ${b.name} · Job No: ${b.jobNo}`;
+  }
+
+  /* ---- Live refresh for timers/ETA while any panel is open ---- */
+  setInterval(tickOpenViews, 1000);
+
+  document.getElementById('roleModalOverlay').addEventListener('click', (e) => { if (e.target.id === 'roleModalOverlay') closeRoleModal(); });
+  document.getElementById('completeJobModalOverlay').addEventListener('click', (e) => { if (e.target.id === 'completeJobModalOverlay') closeCompleteJobModal(); });
+  document.getElementById('billModalOverlay').addEventListener('click', (e) => { if (e.target.id === 'billModalOverlay') closeBillModal(); });
+  document.getElementById('adminLoginOverlay').addEventListener('click', (e) => { if (e.target.id === 'adminLoginOverlay') closeAdminLogin(); });
+  document.getElementById('techLoginOverlay').addEventListener('click', (e) => { if (e.target.id === 'techLoginOverlay') closeTechLogin(); });
+  document.getElementById('trackLookupOverlay').addEventListener('click', (e) => { if (e.target.id === 'trackLookupOverlay') closeTrackLookup(); });
+  document.getElementById('termsModalOverlay').addEventListener('click', (e) => { if (e.target.id === 'termsModalOverlay') closeTermsModal(); });
+  document.getElementById('partnerModalOverlay').addEventListener('click', (e) => { if (e.target.id === 'partnerModalOverlay') closePartnerModal(); });
+  document.getElementById('myBookingsOverlay').addEventListener('click', (e) => { if (e.target.id === 'myBookingsOverlay') closeMyBookings(); });
+
+  /* ---- Hero services showcase animation ---- */
+  const SHOWCASE_ICONS = {
+    'Electrician': '<path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/>',
+    'Plumber': '<path d="M12 2s6 7 6 12a6 6 0 0 1-12 0c0-5 6-12 6-12z"/>',
+    'AC Repair': '<path d="M12 2v20M2 12h20M5 5l14 14M19 5 5 19"/>',
+    'Gas Stove Repair': '<path d="M8.5 2c0 1.5-1.5 2-1.5 3.5S8 8 8.5 8s1.5-1 1.5-2.5S8.5 3.5 8.5 2zM15.5 2c0 1.5-1.5 2-1.5 3.5S15 8 15.5 8 17 7 17 5.5 15.5 3.5 15.5 2z"/><path d="M4 12c0-1.1.9-2 2-2h12a2 2 0 0 1 2 2v2H4v-2z"/><path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/>',
+    'Appliance Repair': '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h4"/>',
+    'Civil Work': '<path d="M3 21h18"/><path d="M5 21V9l7-5 7 5v12"/><path d="M9 21v-6h6v6"/>',
+    'Painter': '<path d="M3 14h4v7H3zM7 14 18 3l3 3-11 11"/>'
+  };
+
+  function buildShowcase(){
+    const grid = document.getElementById('showcaseGrid');
+    grid.innerHTML = Object.keys(SHOWCASE_ICONS).map((name, i) => `
+      <div class="showcase-item" data-idx="${i}" onclick="handleBookNowClick(event, '${name}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${SHOWCASE_ICONS[name]}</svg>
+        <span>${name}</span>
+      </div>
+    `).join('');
+  }
+  buildShowcase();
+
+  let showcaseIdx = 0;
+  setInterval(() => {
+    const items = document.querySelectorAll('.showcase-item');
+    if (items.length === 0) return;
+    items.forEach(el => el.classList.remove('active'));
+    items[showcaseIdx % items.length].classList.add('active');
+    showcaseIdx++;
+  }, 1100);
+
+  const UPI_ID = '6206539534@ybl';
+  const PAYEE_NAME = 'FixPro India';
+  const AMOUNT = '49';
+
+  const SERVICES = ['Electrician', 'Plumber', 'AC Repair', 'Gas Stove Repair', 'Appliance Repair', 'Civil Work', 'Painter'];
+  const PROBLEMS = {
+    'Electrician': ['Fan Repair', 'Switch / Socket', 'MCB Tripping', 'Wiring', 'Light', 'New Installation', 'Other'],
+    'Plumber': ['Pipe Leakage', 'Tap Repair', 'Geyser Installation', 'Blockage', 'Other'],
+    'AC Repair': ['Gas Filling', 'Cooling Issue', 'Installation', 'Servicing', 'Other'],
+    'Gas Stove Repair': ['Burner Issue', 'Ignition Problem', 'Gas Leakage', 'Other'],
+    'Appliance Repair': ['Washing Machine', 'Geyser', 'RO / Water Purifier', 'Other'],
+    'Civil Work': ['Masonry', 'Tiling', 'Wall Repair', 'Waterproofing', 'Other'],
+    'Painter': ['Wall Paint', 'Waterproofing', 'Touch-up', 'Other']
+  };
+
+  let selectedService = SERVICES[0];
+
+  function renderServicePills(){
+    const wrap = document.getElementById('svcPills');
+    wrap.innerHTML = SERVICES.map(s =>
+      `<button type="button" class="svc-pill${s === selectedService ? ' active' : ''}" onclick="selectService('${s}')">${s}</button>`
+    ).join('');
+    renderProblemOptions();
+  }
+
+  function renderProblemOptions(){
+    const sel = document.getElementById('fProblem');
+    sel.innerHTML = '<option value="">Select problem</option>' +
+      PROBLEMS[selectedService].map(p => `<option value="${p}">${p}</option>`).join('');
+  }
+
+  function selectService(s){
+    selectedService = s;
+    renderServicePills();
+  }
+
+  function openBookingModal(e, preselectService){
+    if (e) e.preventDefault();
+    document.getElementById('formError').classList.remove('show');
+    if (preselectService && SERVICES.includes(preselectService)){
+      selectedService = preselectService;
+    }
+    renderServicePills();
+    document.getElementById('fName').value = '';
+    document.getElementById('fMobile').value = '';
+    document.getElementById('fMobile').removeAttribute('readonly');
+    document.getElementById('fArea').value = '';
+    document.getElementById('fAddress').value = '';
+    document.getElementById('bookingModalOverlay').classList.add('open');
+  }
+
+  function closeBookingModal(){
+    document.getElementById('bookingModalOverlay').classList.remove('open');
+  }
+
+  async function submitBookingForm(e){
+    e.preventDefault();
+    const problem = document.getElementById('fProblem').value;
+    const name = document.getElementById('fName').value.trim();
+    const mobile = document.getElementById('fMobile').value.trim();
+    const area = document.getElementById('fArea').value;
+    const address = document.getElementById('fAddress').value.trim();
+    const details = document.getElementById('fDetails') ? document.getElementById('fDetails').value.trim() : '';
+    const err = document.getElementById('formError');
+
+    if (!problem || !name || !mobile || !area || !address){
+      err.classList.add('show');
+      return;
+    }
+    err.classList.remove('show');
+
+    const submitBtn = document.getElementById('bookingSubmitBtn');
+    if (submitBtn) submitBtn.textContent = 'Booking...';
+
+    let jobNo;
+    try {
+      jobNo = await getNextJobNo();
+    } catch (err0){
+      console.error('Failed to generate job number:', err0);
+      alert('Could not process your booking right now. Please check your internet connection and try again.');
+      if (submitBtn) submitBtn.textContent = 'Send Request';
+      return;
+    }
+
+    const newBooking = {
+      jobNo,
+      service: selectedService,
+      problem,
+      name,
+      mobile,
+      area,
+      address,
+      details,
+      status: 'pending',
+      technicianId: null,
+      startTime: null,
+      completedAt: null,
+      etaMin: null,
+      createdAt: Date.now()
+    };
+
+    if (FIREBASE_CONFIGURED){
+      try {
+        await dbRef.collection('bookings').add(newBooking);
+        // onSnapshot will push it into bookingsCache automatically
+      } catch (err2){
+        console.error('Failed to save booking:', err2);
+        alert('Could not save your booking. Please check your internet connection and try again.');
+        if (submitBtn) submitBtn.textContent = 'Send Request';
+        return;
+      }
+    } else {
+      bookingsCache.push(newBooking);
+    }
+
+    if (submitBtn) submitBtn.textContent = 'Send Request';
+    lastBookedMobile = mobile;
+
+    document.getElementById('payModalSummary').textContent =
+      `${selectedService} — ${problem} for ${name} · Job No: ${jobNo}`;
+
+    closeBookingModal();
+    openPayModal();
+  }
+
+  function buildUpiLink(amount, note){
+    const params = new URLSearchParams({
+      pa: UPI_ID,
+      pn: PAYEE_NAME,
+      am: String(amount),
+      cu: 'INR',
+      tn: note || 'FixPro India Payment'
+    });
+    return 'upi://pay?' + params.toString();
+  }
+
+  function buildAppUpiLinks(amount, note){
+    const params = new URLSearchParams({
+      pa: UPI_ID,
+      pn: PAYEE_NAME,
+      am: String(amount),
+      cu: 'INR',
+      tn: note || 'FixPro India Payment'
+    }).toString();
+    return {
+      gpay: 'tez://upi/pay?' + params,
+      phonepe: 'phonepe://pay?' + params,
+      paytm: 'paytmmp://pay?' + params,
+      other: 'upi://pay?' + params
+    };
+  }
+
+  function openPayModal(opts){
+    opts = opts || {};
+    const amount = opts.amount || AMOUNT;
+    const overlay = document.getElementById('payModalOverlay');
+    const note = opts.note || 'FixPro India Booking Charge';
+    const upiLink = buildUpiLink(amount, note);
+    const appLinks = buildAppUpiLinks(amount, note);
+
+    document.getElementById('payModalTitle').textContent = opts.title || 'Confirm Your Booking';
+    document.getElementById('payModalAmt').textContent = '₹' + amount;
+    document.getElementById('payModalHint').textContent =
+      opts.hint || '₹49 booking charge is fully adjusted against your final bill.';
+    document.getElementById('trackBookingBtnWrap').style.display = opts.showTrack === false ? 'none' : 'block';
+
+    new QRious({
+      element: document.getElementById('upiQrCanvas'),
+      value: upiLink,
+      size: 190,
+      background: '#ffffff',
+      foreground: '#0B0E13',
+      level: 'M'
+    });
+
+    document.getElementById('upiLinkGpay').setAttribute('href', appLinks.gpay);
+    document.getElementById('upiLinkPhonepe').setAttribute('href', appLinks.phonepe);
+    document.getElementById('upiLinkPaytm').setAttribute('href', appLinks.paytm);
+    document.getElementById('upiLinkOther').setAttribute('href', appLinks.other);
+    overlay.classList.add('open');
+  }
+
+  function closePayModal(){
+    document.getElementById('payModalOverlay').classList.remove('open');
+  }
+
+  document.getElementById('payModalOverlay').addEventListener('click', (e) => {
+    if (e.target.id === 'payModalOverlay') closePayModal();
+  });
+  document.getElementById('bookingModalOverlay').addEventListener('click', (e) => {
+    if (e.target.id === 'bookingModalOverlay') closeBookingModal();
+  });
+</script>
+</body>
+</html>
